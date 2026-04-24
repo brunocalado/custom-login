@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cinzel+Decorative:wght@400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #0d0514; /* Roxo escuro profundo (Ametista) */
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #e8e8e8;
+    }
+
+    body.layout-carousel { overflow-x: hidden; }
+
+    /* --- NOVO FUNDO ANIMADO --- */
+    .cl-bg-layer {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Ocultar se tiver fundo customizado */
+    body.has-custom-bg .cl-bg-layer { display: none !important; }
+
+    /* Nebulosa de fundo - Contraste Roxo e Âmbar (Amarelo) */
+    .cl-bg-layer::before {
+      content: '';
+      position: absolute; inset: -20%;
+      background:
+        radial-gradient(ellipse at 25% 30%, rgba(255, 180, 50, 0.15) 0%, transparent 55%),
+        radial-gradient(ellipse at 75% 65%, rgba(120, 30, 180, 0.25) 0%, transparent 55%);
+      filter: blur(50px);
+      animation: driftBg 15s infinite alternate ease-in-out;
+    }
+
+    @keyframes driftBg {
+      0% { transform: scale(1) rotate(0deg); }
+      100% { transform: scale(1.1) rotate(3deg); }
+    }
+
+    /* Runa Giratória Gigante (Âmbar/Ouro) */
+    .cl-bg-rune {
+      position: absolute;
+      width: 120vmin; height: 120vmin;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'%3E%3Cg fill='none' stroke='%23ffb833' stroke-width='2' stroke-opacity='0.15'%3E%3Ccircle cx='400' cy='400' r='380' stroke-dasharray='4 16'/%3E%3Ccircle cx='400' cy='400' r='360'/%3E%3Ccircle cx='400' cy='400' r='240' stroke-width='1'/%3E%3Cpath d='M400 10v780M10 400h780M124 124l552 552M124 676l552-552' stroke-opacity='0.08'/%3E%3Ccircle cx='400' cy='400' r='100' stroke-dasharray='2 8'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      animation: spinRune 120s linear infinite;
+      opacity: 0.8;
+    }
+
+    @keyframes spinRune {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* --- CAROUSEL BASE --- */
+    .cl-carousel-page {
+      position: relative; z-index: 2;
+      width: 100vw; height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 1.75rem;
+    }
+
+    .cl-carousel-wrap {
+      position: relative;
+      width: 100%; max-width: 1500px;
+      padding: 0 6rem;
+      animation: fadeUp 0.9s 0.1s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    /* Fade-out real com máscara nas bordas do carrossel */
+    .cl-viewport { 
+      overflow-x: clip; overflow-y: visible; width: 100%; 
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+      mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+      cursor: grab;
+    }
+    .cl-viewport:active { cursor: grabbing; }
+
+    .cl-track { display: flex; will-change: transform; }
+
+    .cl-card {
+      flex-shrink: 0; cursor: pointer; position: relative;
+      transition: transform 300ms cubic-bezier(.16,1,.3,1), filter 300ms ease;
+      z-index: 1;
+    }
+    .cl-card:hover { transform: scale(1.1) translateY(-10px) !important; z-index: 10; }
+
+    .cl-card-inner {
+      width: 100%; height: 100%;
+      border-radius: 0.65rem; overflow: hidden; position: relative;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.7);
+      transition: box-shadow 300ms ease;
+    }
+    .cl-card:hover .cl-card-inner {
+      box-shadow: 0 20px 60px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.18);
+    }
+    .cl-card img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: top center;
+      display: block; pointer-events: none; user-select: none;
+      transition: filter 300ms ease;
+    }
+
+    /* Bordas em degradê Roxo e Âmbar (Amarelo) */
+    .cl-card-inner::before, .cl-card-inner::after {
+      content: ''; position: absolute; left: 0; right: 0; height: 3px; z-index: 2; pointer-events: none;
+    }
+    .cl-card-inner::before {
+      top: 0; background: linear-gradient(90deg, transparent, rgba(160, 80, 255, 0.7), rgba(255, 200, 50, 0.9), rgba(160, 80, 255, 0.7), transparent);
+    }
+    .cl-card-inner::after {
+      bottom: 0; background: linear-gradient(90deg, transparent, rgba(160, 80, 255, 0.5), rgba(255, 200, 50, 0.6), rgba(160, 80, 255, 0.5), transparent);
+    }
+
+    /* Novo rótulo global posicionado na parte inferior central */
+    .cl-global-name-label {
+      position: absolute;
+      bottom: 8%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.8rem, 3.5vw, 3.2rem);
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.95);
+      text-transform: uppercase;
+      text-align: center;
+      letter-spacing: 0.12em;
+      text-shadow: 0 4px 15px rgba(0, 0, 0, 0.9), 0 0 25px rgba(255, 180, 50, 0.5);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      white-space: nowrap;
+    }
+    .cl-global-name-label.visible {
+      opacity: 1;
+      transform: translate(-50%, -10px);
+    }
+
+    .cl-card-placeholder {
+      width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+      background: #1e1e2e; font-family: 'Cinzel', serif; font-size: clamp(0.8rem, 1.5vw, 1.1rem);
+      color: rgba(255,255,255,0.5); text-align: center; padding: 1rem;
+    }
+
+    /* --- NOVOS BOTÕES DE NAVEGAÇÃO --- */
+    .cl-nav {
+      position: absolute; top: 50%; z-index: 5;
+      width: 54px; height: 120px; 
+      transform: translateY(-50%);
+      background: rgba(25, 10, 40, 0.5);
+      border: 1px solid rgba(255, 180, 50, 0.25);
+      color: rgba(255,255,255,0.5);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    .cl-nav svg {
+      width: 28px; height: 28px;
+      transition: transform 300ms ease, filter 300ms ease;
+    }
+    
+    .cl-nav-left  { left: 1rem; border-radius: 8px 30px 30px 8px; border-left: none; }
+    .cl-nav-right { right: 1rem; border-radius: 30px 8px 8px 30px; border-right: none; }
+
+    .cl-nav:hover { 
+      background: rgba(50, 20, 80, 0.8); 
+      border-color: rgba(255, 200, 50, 0.6); 
+      color: #fff; 
+      box-shadow: 0 0 25px rgba(255, 180, 50, 0.25), inset 0 0 15px rgba(255, 180, 50, 0.2);
+      height: 140px;
+      width: 60px;
+    }
+    .cl-nav-left:hover svg { transform: translateX(-4px) scale(1.1); filter: drop-shadow(0 0 5px #fff); }
+    .cl-nav-right:hover svg { transform: translateX(4px) scale(1.1); filter: drop-shadow(0 0 5px #fff); }
+    
+    .cl-nav:active { transform: translateY(-50%) scale(0.92); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    
+    #cl-status {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-family: sans-serif; font-size: 1.2rem; color: #aaa; pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="cl-bg-layer" id="cl-bg-layer">
+    <div class="cl-bg-rune"></div>
+  </div>
+
+  <main class="cl-carousel-page">
+    <div class="cl-carousel-wrap" id="cl-wrap">
+      
+      <button class="cl-nav cl-nav-left" id="cl-prev" aria-label="Previous">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      
+      <button class="cl-nav cl-nav-right" id="cl-next" aria-label="Next">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+
+      <div class="cl-viewport" id="cl-viewport">
+        <div class="cl-track" id="cl-track"></div>
+      </div>
+
+    </div>
+    
+    <!-- Elemento para exibir o nome do jogador -->
+    <div id="cl-global-name-label" class="cl-global-name-label"></div>
+  </main>
+
+  <div id="cl-status">Loading&hellip;</div>
+
+  <script src="/modules/custom-login/assets/screens/shared.js"></script>
+  <script>
+    try {
+      history.replaceState(null, '', 'index.html');
+    } catch (e) {
+      console.warn('O replaceState foi bloqueado no ambiente de pré-visualização. Ignorando.', e);
+    }
+
+    const CARD_WIDTH   = 190;
+    const CARD_GAP     = 22;
+    const AUTO_SPEED   = 0.4;
+    const STEP_ANIM_MS = 420;
+
+    let segW = 0, pos = 0, paused = false, animating = false, rafId = null;
+
+    function buildPortraitCardCarousel(entry, showNames, hoverAudio, joinAudio) {
+      const cardH = Math.round(CARD_WIDTH * 16 / 9);
+      const wrap = document.createElement('div');
+      wrap.className = 'cl-card';
+      wrap.style.width  = CARD_WIDTH + 'px';
+      wrap.style.height = cardH + 'px';
+      wrap.style.marginRight = CARD_GAP + 'px';
+
+      const inner = document.createElement('div');
+      inner.className = 'cl-card-inner';
+
+      if (entry.imageUrl) {
+        const img = document.createElement('img');
+        img.src = toAbsolute(entry.imageUrl);
+        img.alt = esc(displayName(entry));
+        img.draggable = false;
+        inner.appendChild(img);
+      } else {
+        const ph = document.createElement('div');
+        ph.className = 'cl-card-placeholder';
+        ph.textContent = displayName(entry);
+        inner.appendChild(ph);
+      }
+
+      wrap.appendChild(inner);
+
+      wrap.addEventListener('mouseenter', () => { 
+        paused = true; 
+        if (showNames) {
+          const globalLabel = document.getElementById('cl-global-name-label');
+          if (globalLabel) {
+            globalLabel.textContent = displayName(entry);
+            globalLabel.classList.add('visible');
+          }
+        }
+        if (hoverAudio) {
+          hoverAudio.currentTime = 0;
+          hoverAudio.play().catch(() => {});
+        }
+      });
+      
+      wrap.addEventListener('mouseleave', () => { 
+        paused = false; 
+        if (showNames) {
+          const globalLabel = document.getElementById('cl-global-name-label');
+          if (globalLabel) {
+            globalLabel.classList.remove('visible');
+          }
+        }
+      });
+      
+      wrap.addEventListener('click', () => { 
+        const doLogin = async (pw) => {
+          if (joinAudio) {
+            joinAudio.currentTime = 0;
+            joinAudio.play().catch(() => {});
+            await new Promise(r => { joinAudio.addEventListener('ended', r, { once: true }); setTimeout(r, 1500); });
+          }
+          loginAs(entry.userId, pw);
+        };
+        if (entry.requirePassword) {
+          showPasswordDialog(doLogin);
+        } else {
+          doLogin('');
+        }
+      });
+
+      return wrap;
+    }
+
+    function buildTrack(entries, trackEl, viewportEl, showNames, hoverAudio, joinAudio) {
+      trackEl.innerHTML = '';
+      segW = entries.length * (CARD_WIDTH + CARD_GAP);
+      for (let rep = 0; rep < 3; rep++) {
+        for (const entry of entries) {
+          trackEl.appendChild(buildPortraitCardCarousel(entry, showNames, hoverAudio, joinAudio));
+        }
+      }
+      const cardH = Math.round(CARD_WIDTH * 16 / 9);
+      viewportEl.style.padding = Math.round(cardH * 0.14) + 'px 0';
+    }
+
+    function applyPos(trackEl) { trackEl.style.transform = 'translateX(' + (-pos) + 'px)'; }
+    function wrapPos(p) { return (p <= 0) ? p + segW : (p >= segW * 2) ? p - segW : p; }
+
+    function tick(trackEl) {
+      if (!paused && !animating) {
+        pos = wrapPos(pos + AUTO_SPEED);
+        applyPos(trackEl);
+      }
+      rafId = requestAnimationFrame(() => tick(trackEl));
+    }
+
+    function scrollBy(delta, trackEl) {
+      if (animating) return;
+      animating = true;
+      const start = pos;
+      const t0    = performance.now();
+      const ease  = t => t < 0.5 ? 2*t*t : -1 + (4 - 2*t)*t;
+
+      function step(now) {
+        const t = Math.min((now - t0) / STEP_ANIM_MS, 1);
+        pos = wrapPos(start + delta * ease(t));
+        applyPos(trackEl);
+        if (t < 1) requestAnimationFrame(step);
+        else animating = false;
+      }
+      requestAnimationFrame(step);
+    }
+
+    async function init() {
+      injectSharedStyles();
+      const statusEl = document.getElementById('cl-status');
+      const jsonPath = await resolveJsonPath();
+      if (!jsonPath) { await showNoWorldPage(); return; }
+
+      const res = await fetch(jsonPath, { cache: 'no-cache' });
+      if (res.status === 404) { await showNoWorldPage(); return; }
+      if (!res.ok) { statusEl.textContent = 'Could not load player list (' + res.status + ').'; return; }
+
+      const raw = await res.json();
+      const entries    = Array.isArray(raw) ? raw : (raw.entries    ?? []);
+      const appearance = Array.isArray(raw) ? {}  : (raw.appearance ?? {});
+      const soundCfg   = Array.isArray(raw) ? {}  : (raw.sounds     ?? {});
+
+      const hoverAudio = new Audio(toAbsolute(soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3'));
+      const joinAudio  = new Audio(toAbsolute(soundCfg.joinSound  || 'modules/custom-login/assets/sfx/join.mp3'));
+      hoverAudio.volume = 0.6;
+      joinAudio.volume  = 0.8;
+
+      document.body.classList.add('layout-carousel');
+
+      if (appearance.backgroundUrl) {
+        document.body.classList.add('has-custom-bg');
+        applyBackground(appearance.backgroundUrl, { videoAudio: appearance.videoAudio });
+      }
+
+      const faviconLink = document.createElement('link');
+      faviconLink.rel = 'shortcut icon';
+      faviconLink.href = toAbsolute(appearance.faviconUrl || 'modules/custom-login/assets/screens/favicon.ico');
+      document.head.appendChild(faviconLink);
+
+      document.title = appearance.screenTitle || 'Welcome';
+
+      const valid = entries.filter(e => e.userId);
+      if (!valid.length) {
+        statusEl.textContent = 'No players configured yet. Ask your GM to set up the welcome page.';
+        return;
+      }
+
+      const showNames = (appearance.showNames ?? 'yes') !== 'no';
+      statusEl.remove();
+
+      const trackEl    = document.getElementById('cl-track');
+      const viewportEl = document.getElementById('cl-viewport');
+      
+      buildTrack(valid, trackEl, viewportEl, showNames, hoverAudio, joinAudio);
+      
+      pos = segW;
+      applyPos(trackEl);
+
+      document.getElementById('cl-prev').addEventListener('click', () => scrollBy(-(CARD_WIDTH + CARD_GAP), trackEl));
+      document.getElementById('cl-next').addEventListener('click', () => scrollBy(  CARD_WIDTH + CARD_GAP,  trackEl));
+
+      // Lógica original de "arrastar" mantida para suporte a toque/mouse
+      let dragActive = false, dragStartX = 0, dragStartPos = 0, hasDragged = false;
+
+      const onMove = (e) => {
+        if (!dragActive) return;
+        const dx = dragStartX - e.clientX;
+        if (Math.abs(dx) > 5) hasDragged = true;
+        pos = wrapPos(dragStartPos + dx);
+        applyPos(trackEl);
+      };
+
+      const onUp = () => {
+        dragActive = false;
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('pointercancel', onUp);
+      };
+
+      viewportEl.addEventListener('pointerdown', (e) => {
+        dragActive   = true;
+        hasDragged   = false;
+        dragStartX   = e.clientX;
+        dragStartPos = pos;
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+        window.addEventListener('pointercancel', onUp);
+      });
+
+      // Evita o clique acidental ao soltar após arrastar
+      viewportEl.addEventListener('click', (e) => {
+        if (hasDragged) { e.preventDefault(); e.stopPropagation(); }
+      }, true);
+
+      rafId = requestAnimationFrame(() => tick(trackEl));
+    }
+
+    init();
+  </script>
+</body>
+</html>

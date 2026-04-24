@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Selecionar Personagem</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@700&family=Crimson+Pro:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --gold:   #f0c060;
+  --teal:   #40e0c0;
+  --purple: #9955ee;
+  --dim:    rgba(255,255,255,0.18);
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #00000a;
+  font-family: 'Crimson Pro', Georgia, serif;
+  color: #e8e0f0;
+}
+
+/* ── STARS CANVAS ── */
+#stars { position: fixed; inset: 0; z-index: 0; }
+
+/* ── SCENE ── */
+.scene {
+  position: relative; z-index: 1;
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── SOLAR SYSTEM ── */
+.solar-system {
+  position: relative;
+  width: 0; height: 0;
+}
+
+/* orbit ring paths */
+.orbit-path {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.06);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  top: 0; left: 0;
+}
+
+/* ── SUN ── */
+.sun {
+  position: absolute;
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 38% 38%,
+    #fffde0 0%, #fff5a0 18%, #ffcc30 40%, #ff8800 65%, #c04000 100%);
+  z-index: 10;
+  cursor: default;
+  animation: sunPulse 4s ease-in-out infinite alternate;
+}
+.sun::before {
+  content: '';
+  position: absolute; inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(255,200,50,.45) 0%,
+    rgba(255,140,20,.2)  40%,
+    transparent 70%);
+  animation: coronaPulse 3s ease-in-out infinite alternate;
+}
+.sun::after {
+  content: '';
+  position: absolute; inset: -55px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(255,180,30,.18) 0%,
+    rgba(255,100,10,.06) 50%,
+    transparent 70%);
+  animation: coronaPulse 5s ease-in-out infinite alternate-reverse;
+}
+@keyframes sunPulse {
+  from { box-shadow: 0 0 40px 12px rgba(255,160,20,.7), 0 0 100px 30px rgba(255,100,0,.3), 0 0 200px 60px rgba(255,60,0,.15); }
+  to   { box-shadow: 0 0 60px 20px rgba(255,200,40,.9), 0 0 140px 50px rgba(255,130,0,.4), 0 0 280px 90px rgba(255,80,0,.2); }
+}
+@keyframes coronaPulse {
+  from { transform: scale(1);    opacity: .7; }
+  to   { transform: scale(1.15); opacity: 1;  }
+}
+
+/* sun rays */
+.sun-rays {
+  position: absolute; inset: -70px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg, rgba(255,200,50,.06) 2deg, transparent 4deg,
+    transparent 20deg, rgba(255,200,50,.05) 22deg, transparent 24deg,
+    transparent 45deg, rgba(255,200,50,.07) 47deg, transparent 49deg,
+    transparent 65deg, rgba(255,200,50,.04) 67deg, transparent 69deg,
+    transparent 90deg, rgba(255,200,50,.06) 92deg, transparent 94deg,
+    transparent 110deg, rgba(255,200,50,.05) 112deg, transparent 114deg,
+    transparent 135deg, rgba(255,200,50,.07) 137deg, transparent 139deg,
+    transparent 155deg, rgba(255,200,50,.04) 157deg, transparent 159deg,
+    transparent 180deg, rgba(255,200,50,.06) 182deg, transparent 184deg,
+    transparent 200deg, rgba(255,200,50,.05) 202deg, transparent 204deg,
+    transparent 225deg, rgba(255,200,50,.07) 227deg, transparent 229deg,
+    transparent 245deg, rgba(255,200,50,.04) 247deg, transparent 249deg,
+    transparent 270deg, rgba(255,200,50,.06) 272deg, transparent 274deg,
+    transparent 290deg, rgba(255,200,50,.05) 292deg, transparent 294deg,
+    transparent 315deg, rgba(255,200,50,.07) 317deg, transparent 319deg,
+    transparent 335deg, rgba(255,200,50,.04) 337deg, transparent 339deg
+  );
+  animation: raysRotate 30s linear infinite;
+  pointer-events: none;
+}
+@keyframes raysRotate { to { transform: rotate(360deg); } }
+
+/* ── ORBIT ARM + PLANET ── */
+.orbit-arm {
+  position: absolute;
+  top: 0; left: 0;
+  width: 0; height: 0;
+  animation: spinOrbit var(--dur, 20s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  z-index: 5;
+}
+.orbit-arm.paused { animation-play-state: paused; }
+
+@keyframes spinOrbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.planet-wrap {
+  position: absolute;
+  left: calc(-1 * var(--size, 60px) / 2);
+  top: calc(-1 * var(--r, 200px) - var(--size, 60px) / 2);
+  width: var(--size, 60px);
+  height: var(--size, 60px);
+  animation: counterSpin var(--dur, 20s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  cursor: pointer;
+  transition: transform .4s cubic-bezier(.2,.8,.2,1);
+}
+.orbit-arm.paused .planet-wrap { animation-play-state: paused; }
+@keyframes counterSpin { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+
+.planet-img {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.15);
+  background: #0a0820;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  transition: border-color .3s ease, box-shadow .3s ease, transform .4s cubic-bezier(.2,.8,.2,1);
+  position: relative;
+}
+/* placeholder art */
+.planet-img .placeholder {
+  width: 100%; height: 100%;
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    oklch(18% 0.06 var(--hue,280)) 0deg 15deg,
+    oklch(12% 0.04 var(--hue,280)) 15deg 30deg
+  );
+  display: flex; align-items: center; justify-content: center;
+}
+.planet-img .placeholder-label {
+  font-family: 'Cinzel', serif;
+  font-size: .32rem;
+  letter-spacing: .05em;
+  color: rgba(255,255,255,.2);
+  text-transform: uppercase;
+  text-align: center;
+  padding: .3rem;
+  position: relative; z-index: 1;
+}
+/* real image */
+.planet-img img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  position: absolute; inset: 0;
+}
+
+/* hover */
+.planet-wrap:not(.empty):hover .planet-img {
+  border-color: rgba(255,255,255,.5);
+  box-shadow: 0 0 20px 4px rgba(180,120,255,.5);
+  transform: scale(1.1);
+}
+
+/* selected */
+.planet-wrap.selected .planet-img {
+  border-color: var(--gold);
+  border-width: 3px;
+  box-shadow:
+    0 0 0 4px rgba(240,192,96,.15),
+    0 0 25px 8px rgba(240,192,96,.45),
+    0 0 60px 16px rgba(200,120,255,.25);
+  transform: scale(1.22);
+}
+
+/* empty planet */
+.planet-wrap.empty { cursor: default; opacity: .3; }
+.planet-wrap.empty .planet-img {
+  border: 1px dashed rgba(255,255,255,.15);
+  background: rgba(255,255,255,.02);
+}
+.planet-wrap.empty:hover .planet-img {
+  transform: none; box-shadow: none; border-color: rgba(255,255,255,.15);
+}
+.empty-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  margin: auto; position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+}
+
+
+
+/* Gamemaster ring: golden tint */
+.gm-ring .planet-img .placeholder {
+  background: repeating-conic-gradient(
+    oklch(22% 0.09 75) 0deg 15deg,
+    oklch(16% 0.06 75) 15deg 30deg
+  );
+}
+.gm-ring .planet-wrap.selected .planet-img,
+.gm-ring .planet-wrap:not(.empty):hover .planet-img {
+  box-shadow: 0 0 25px 8px rgba(240,192,60,.6), 0 0 60px 20px rgba(255,150,0,.2);
+  border-color: #ffdf80;
+}
+
+
+
+
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+
+<div class="scene">
+  <div class="solar-system" id="solarSystem">
+    <!-- orbit paths -->
+    <div class="orbit-path" id="path1"></div>
+    <div class="orbit-path" id="path2"></div>
+    <div class="orbit-path" id="path3"></div>
+
+    <!-- sun -->
+    <div class="sun">
+      <div class="sun-rays"></div>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+/* ── STARS ── */
+(function() {
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  function resize() { canvas.width = innerWidth; canvas.height = innerHeight; draw(); }
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const rng = mulberry32(42);
+    for (let i = 0; i < 520; i++) {
+      const x = rng() * canvas.width;
+      const y = rng() * canvas.height;
+      const r = rng() * 1.4 + .2;
+      const a = rng() * .7 + .15;
+      // some stars with color tint
+      const tints = ['255,255,255','200,180,255','180,220,255','255,240,180'];
+      const t = tints[Math.floor(rng() * tints.length)];
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${t},${a})`;
+      ctx.fill();
+    }
+    // a few bright ones with glow
+    for (let i = 0; i < 18; i++) {
+      const x = rng() * canvas.width;
+      const y = rng() * canvas.height;
+      const r = rng() * 1.5 + .8;
+      const g = ctx.createRadialGradient(x,y,0,x,y,r*6);
+      g.addColorStop(0,'rgba(255,255,255,.9)');
+      g.addColorStop(.3,'rgba(220,200,255,.2)');
+      g.addColorStop(1,'transparent');
+      ctx.beginPath(); ctx.arc(x,y,r*6,0,Math.PI*2);
+      ctx.fillStyle = g; ctx.fill();
+    }
+  }
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  window.addEventListener('resize', resize);
+  resize();
+})();
+
+/* ── DATA ── */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "ring1Radius": 169,
+  "ring2Radius": 280,
+  "ring3Radius": 292,
+  "sunSize": 90,
+  "orbitSpeed": 1.8
+}/*EDITMODE-END*/;
+const tweaks = {...TWEAK_DEFAULTS};
+
+const characters = [
+  // ring 1
+  { id:'gm',     name:'Gamemaster',     role:'Narrador',     skulls:0, ring:1, hue:75,  startAngle:-90,  dur:22,  size:72,  gm:true },
+  { id:'jao',    name:'Jão, o Clérigo', role:'Clérigo',      skulls:3, ring:1, hue:200, startAngle:90,   dur:28,  size:65  },
+  // ring 2
+  { id:'p10',    name:'Player-10',      role:'Guerreiro',    skulls:2, ring:2, hue:260, startAngle:30,   dur:38,  size:62  },
+  { id:'pc2',    name:'PC 2',           role:'Personagem',   skulls:2, ring:2, hue:310, startAngle:150,  dur:45,  size:60  },
+  { id:'ignara', name:'Ignara',         role:'Maga',         skulls:3, ring:2, hue:280, startAngle:270,  dur:33,  size:65  },
+  // ring 3 (empty)
+  { id:'p5',  name:'Player-5',  empty:true, ring:3, startAngle:0,   dur:55, size:44 },
+  { id:'p6',  name:'Player-6',  empty:true, ring:3, startAngle:72,  dur:60, size:44 },
+  { id:'p7',  name:'Player-7',  empty:true, ring:3, startAngle:144, dur:50, size:44 },
+  { id:'p8',  name:'Player-8',  empty:true, ring:3, startAngle:216, dur:65, size:44 },
+  { id:'p9',  name:'Player-9',  empty:true, ring:3, startAngle:288, dur:58, size:44 },
+];
+
+const ringRadii = () => [tweaks.ring1Radius, tweaks.ring2Radius, tweaks.ring3Radius];
+
+let selectedId = localStorage.getItem('charSelect_solar') || 'ignara';
+
+/* ── BUILD SOLAR SYSTEM ── */
+function buildSystem() {
+  const sys = document.getElementById('solarSystem');
+  // clear existing arms
+  sys.querySelectorAll('.orbit-arm').forEach(el => el.remove());
+
+  const radii = ringRadii();
+
+  // orbit paths
+  ['path1','path2','path3'].forEach((id, i) => {
+    const r = radii[i];
+    const el = document.getElementById(id);
+    el.style.width  = r*2 + 'px';
+    el.style.height = r*2 + 'px';
+    el.style.marginLeft = -r + 'px';
+    el.style.marginTop  = -r + 'px';
+  });
+
+  characters.forEach(char => {
+    const r = radii[char.ring - 1];
+    const speed = tweaks.orbitSpeed;
+    const dur = char.dur / speed;
+
+    const arm = document.createElement('div');
+    arm.className = 'orbit-arm' + (char.gm ? ' gm-ring' : '');
+    arm.dataset.id = char.id;
+    arm.style.cssText = `--r:${r}px; --dur:${dur}s; --size:${char.size}px;`;
+    // start at initialAngle via animation-delay trick:
+    // delay = -(startAngle/360)*dur
+    const delay = -(char.startAngle / 360) * dur;
+    arm.style.animationDelay = delay + 's';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'planet-wrap' +
+      (char.empty ? ' empty' : '') +
+      (char.id === selectedId && !char.empty ? ' selected' : '');
+    wrap.dataset.id = char.id;
+    wrap.style.cssText = `--r:${r}px; --dur:${dur}s; --size:${char.size}px;`;
+    wrap.style.animationDelay = delay + 's';
+
+    const img = document.createElement('div');
+    img.className = 'planet-img';
+
+    if (char.empty) {
+      img.innerHTML = `<div class="empty-dot"></div>`;
+    } else {
+      // placeholder: replaced by real img when src set
+      img.innerHTML = `
+        <div class="placeholder" style="--hue:${char.hue || 280}">
+          <span class="placeholder-label">${char.role || char.name}</span>
+        </div>
+      `;
+      wrap.addEventListener('click', () => selectChar(char.id));
+    }
+
+    wrap.appendChild(img);
+    arm.appendChild(wrap);
+    sys.appendChild(arm);
+
+
+  });
+
+}
+
+function selectChar(id) {
+  if (id === selectedId) return;
+  selectedId = id;
+  localStorage.setItem('charSelect_solar', id);
+  document.querySelectorAll('.planet-wrap').forEach(w => {
+    w.classList.toggle('selected', w.dataset.id === id);
+  });
+}
+
+buildSystem();
+
+/* ── TWEAKS ── */
+window.addEventListener('message', e => {
+  if (e.data?.type === '__activate_edit_mode')   showTweaks(true);
+  if (e.data?.type === '__deactivate_edit_mode') showTweaks(false);
+});
+window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+
+let tweakPanel = null;
+function showTweaks(show) {
+  if (!tweakPanel) {
+    tweakPanel = document.createElement('div');
+    tweakPanel.style.cssText = `
+      position:fixed;bottom:20px;right:20px;z-index:999;
+      background:rgba(6,3,18,.95);backdrop-filter:blur(14px);
+      border:1px solid rgba(120,80,200,.3);border-radius:10px;
+      padding:1.2rem 1.4rem;min-width:220px;
+      font-family:'Cinzel',serif;font-size:.72rem;color:rgba(200,180,240,.8);
+    `;
+    tweakPanel.innerHTML = `
+      <div style="font-size:.85rem;font-weight:700;letter-spacing:.1em;margin-bottom:1rem;color:#f0c060">Tweaks</div>
+      ${['ring1Radius:Raio Anel 1:80:300','ring2Radius:Raio Anel 2:150:450','ring3Radius:Raio Anel 3:220:600'].map(s => {
+        const [key,label,min,max] = s.split(':');
+        return `<label style="display:block;margin-bottom:.7rem">
+          <span style="display:block;margin-bottom:.3rem;letter-spacing:.07em">${label}</span>
+          <input type="range" min="${min}" max="${max}" value="${tweaks[key]}" style="width:100%"
+            oninput="applyTweak('${key}',+this.value)">
+        </label>`;
+      }).join('')}
+      <label style="display:block;margin-bottom:.7rem">
+        <span style="display:block;margin-bottom:.3rem;letter-spacing:.07em">Velocidade das Órbitas</span>
+        <input type="range" min="0.2" max="3" step="0.1" value="${tweaks.orbitSpeed}" style="width:100%"
+          oninput="applyTweak('orbitSpeed',+this.value)">
+      </label>
+    `;
+    document.body.appendChild(tweakPanel);
+  }
+  tweakPanel.style.display = show ? 'block' : 'none';
+}
+
+function applyTweak(key, val) {
+  tweaks[key] = val;
+  buildSystem();
+  window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [key]: val } }, '*');
+}
+</script>
+</body>
+</html>

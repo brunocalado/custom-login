@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      color: #e8e8e8;
+    }
+
+    :root {
+      --sp-primary: #ff0055;
+      --sp-secondary: #00f0ff;
+    }
+
+    body.layout-sleek-phantom {
+      background: #050505;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    /* =====================================================
+       DEFAULT BACKGROUND LAYERS
+       Hidden automatically when a custom background is set
+    ===================================================== */
+
+    /* Deep radial base */
+    #sp-bg-base {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 65% 75% at 68% 50%, rgba(30,5,50,0.98) 0%, transparent 62%),
+        radial-gradient(ellipse 85% 85% at 18% 50%, rgba(4,4,20,1) 0%, transparent 72%),
+        #050505;
+      transition: opacity 0.9s ease;
+    }
+
+    /* Animated diagonal energy lines */
+    #sp-bg-lines {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      transition: opacity 0.9s ease;
+    }
+    .sp-line {
+      position: absolute;
+      border-radius: 99px;
+      animation: spLineDrift linear infinite;
+    }
+    @keyframes spLineDrift {
+      0%   { transform: rotate(-38deg) translateX(-30vw); }
+      100% { transform: rotate(-38deg) translateX(130vw); }
+    }
+
+    /* Scanlines — subtle, always present */
+    #sp-scanlines {
+      position: fixed; inset: 0; z-index: 2; pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 3px,
+        rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px
+      );
+      opacity: 0.4; transition: opacity 0.9s ease;
+    }
+
+    /* Floating particles — stay visible with or without custom bg */
+    #sp-particles-layer {
+      position: fixed; inset: 0; z-index: 3; pointer-events: none; overflow: hidden;
+    }
+    .sp-particle {
+      position: absolute; border-radius: 50%;
+      animation: spParticleDrift linear infinite;
+    }
+    @keyframes spParticleDrift {
+      0%   { transform: translateY(0) translateX(0); }
+      50%  { opacity: var(--pa2); }
+      100% { transform: translateY(var(--py)) translateX(var(--px)); opacity: var(--pa); }
+    }
+
+    /* Per-character accent radial glow */
+    #sp-bg-accent {
+      position: fixed; inset: 0; z-index: 4; pointer-events: none;
+      background: radial-gradient(ellipse 52% 80% at 68% 50%, var(--sp-primary), transparent 68%);
+      opacity: 0.08; transition: opacity 0.4s ease;
+    }
+
+    /* Flash overlay on character switch */
+    .sp-flash {
+      position: fixed; inset: 0;
+      background: var(--sp-primary);
+      mix-blend-mode: overlay;
+      opacity: 0; pointer-events: none; z-index: 50;
+      transition: opacity 0.3s ease;
+    }
+    .sp-flash.active { opacity: 0.45; transition: none; }
+
+    /* =====================================================
+       MAIN LAYOUT
+    ===================================================== */
+
+    .sp-container {
+      position: fixed; inset: 0; z-index: 10;
+      display: none;
+      grid-template-columns: 350px 1fr;
+      background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.4) 100%);
+    }
+    body.layout-sleek-phantom .sp-container { display: grid; }
+
+    /* ─── Roster panel ─── */
+    .sp-roster-panel {
+      padding: 4rem 2rem;
+      display: flex; flex-direction: column; gap: 0.25rem;
+      border-right: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
+      overflow: hidden;
+    }
+
+    .sp-char-btn {
+      display: block; width: 100%;
+      background: transparent; border: none;
+      color: #555; text-align: left;
+      font-family: 'Oswald', sans-serif;
+      font-size: 2rem; font-weight: 700;
+      text-transform: uppercase; cursor: pointer;
+      position: relative;
+      padding: 0.15rem 0 0.15rem 1rem;
+      transition: color 0.3s ease, padding-left 0.3s ease;
+      line-height: 1.15;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .sp-char-btn::before {
+      content: '';
+      position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+      width: 4px; height: 0%;
+      background-color: var(--sp-primary);
+      transition: height 0.3s ease, background-color 0.6s ease;
+      border-radius: 2px;
+    }
+    .sp-char-btn:hover { color: #aaa; padding-left: 1.5rem; }
+    .sp-char-btn.active {
+      color: #fff; padding-left: 1.5rem;
+      text-shadow: 0 0 20px var(--sp-primary);
+    }
+    .sp-char-btn.active::before { height: 100%; }
+
+    /* ─── Stage ─── */
+    .sp-stage {
+      position: relative;
+      display: flex; justify-content: center; align-items: flex-end;
+      pointer-events: none; overflow: hidden;
+    }
+
+    /* Portrait card */
+    .sp-portrait {
+      position: absolute; bottom: 0;
+      left: 52%; transform: translateX(-50%) translateX(50px) scale(0.95);
+      height: 88vh; width: auto; aspect-ratio: 9/16;
+      border-radius: 0.75rem; overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.45s ease, transform 0.6s cubic-bezier(0.16,1,0.3,1), box-shadow 0.5s ease;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .sp-portrait.visible {
+      opacity: 1; transform: translateX(-50%) translateX(0) scale(1);
+      box-shadow: 0 0 40px var(--sp-primary), 0 0 0 1px rgba(255,255,255,0.18), 0 30px 80px rgba(0,0,0,0.9);
+    }
+
+    .sp-portrait-inner {
+      width: 100%; height: 100%; position: relative;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-mask-image: linear-gradient(to top, transparent 3%, black 18%);
+      mask-image: linear-gradient(to top, transparent 3%, black 18%);
+    }
+
+    .sp-portrait-bg { position: absolute; inset: 0; }
+
+    /* Shimmer borders on portrait */
+    .sp-portrait-inner::before, .sp-portrait-inner::after {
+      content: ''; position: absolute; left: 0; right: 0; height: 3px; z-index: 3; pointer-events: none;
+    }
+    .sp-portrait-inner::before {
+      top: 0;
+      background: linear-gradient(90deg, transparent, rgba(180,140,255,0.9), rgba(220,190,100,1), rgba(180,140,255,0.9), transparent);
+    }
+    .sp-portrait-inner::after {
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(180,140,255,0.7), rgba(220,190,100,0.8), rgba(180,140,255,0.7), transparent);
+    }
+
+    /* Placeholder initial when no image */
+    .sp-portrait-initial {
+      position: relative; z-index: 2;
+      font-family: 'Oswald', sans-serif; font-weight: 700;
+      font-size: clamp(8rem, 18vw, 16rem);
+      color: rgba(255,255,255,0.18);
+      text-transform: uppercase;
+      pointer-events: none; user-select: none;
+      text-shadow: 0 0 80px var(--sp-primary);
+    }
+
+    /* Actual character image */
+    .sp-portrait-img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: top center;
+      display: block; pointer-events: none; user-select: none;
+    }
+
+    /* Portrait sublabel */
+    .sp-portrait-name-label {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 4;
+      padding: 3rem 1rem 1rem;
+      background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 100%);
+      font-family: 'Oswald', sans-serif; font-size: 0.85rem; font-weight: 500;
+      color: rgba(255,255,255,0.45); text-align: center; text-transform: uppercase; letter-spacing: 0.12em;
+    }
+
+    /* ─── Name overlay ─── */
+    .sp-info-panel {
+      position: absolute; bottom: 2.5rem; left: 2rem; right: 2rem; z-index: 20;
+      pointer-events: none; text-align: right;
+    }
+    .sp-char-name {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(3rem, 7vw, 8rem);
+      line-height: 1; text-transform: uppercase;
+      text-shadow: 6px 6px 0px rgba(0,0,0,0.9), 0 0 40px var(--sp-primary);
+      transform: translateY(20px); opacity: 0;
+      transition: opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s;
+    }
+    .sp-info-panel.visible .sp-char-name { transform: translateY(0); opacity: 1; }
+
+    /* ─── Decorative dots ─── */
+    .sp-ui-dots {
+      position: fixed; bottom: 1.5rem; left: 2rem;
+      display: none; gap: 0.75rem;
+      opacity: 0.2; z-index: 30; pointer-events: none;
+    }
+    body.layout-sleek-phantom .sp-ui-dots { display: flex; }
+    .sp-ui-dot {
+      width: 8px; height: 8px; background: #fff;
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Default animated background — hidden when custom bg is set -->
+  <div id="sp-bg-base"></div>
+  <div id="sp-bg-lines"></div>
+  <div id="sp-scanlines"></div>
+
+  <!-- Particles — always shown -->
+  <div id="sp-particles-layer"></div>
+
+  <!-- Accent glow per character -->
+  <div id="sp-bg-accent"></div>
+
+  <!-- Flash on character switch -->
+  <div class="sp-flash" id="sp-flash"></div>
+
+  <!-- Main layout -->
+  <div class="sp-container">
+    <div class="sp-roster-panel">
+      <div id="sp-roster-list"></div>
+    </div>
+    <div class="sp-stage">
+      <div class="sp-portrait" id="sp-portrait">
+        <div class="sp-portrait-inner">
+          <div class="sp-portrait-bg" id="sp-portrait-bg"></div>
+          <img class="sp-portrait-img" id="sp-portrait-img" src="" alt="" style="display:none">
+          <div class="sp-portrait-initial" id="sp-portrait-initial"></div>
+          <div class="sp-portrait-name-label" id="sp-portrait-sublabel"></div>
+        </div>
+      </div>
+      <div class="sp-info-panel" id="sp-info-panel">
+        <h1 class="sp-char-name" id="sp-char-name"></h1>
+      </div>
+    </div>
+  </div>
+
+  <div class="sp-ui-dots">
+    <div class="sp-ui-dot"></div>
+    <div class="sp-ui-dot"></div>
+    <div class="sp-ui-dot"></div>
+  </div>
+
+  <div id="cl-status">Loading&hellip;</div>
+
+  <script src="/modules/custom-login/assets/screens/shared.js"></script>
+  <script>
+    history.replaceState(null, '', 'index.html');
+
+    /* =====================================================
+       ANIMATED BACKGROUND — Lines
+    ===================================================== */
+    (function buildLines() {
+      const container = document.getElementById('sp-bg-lines');
+      const COLS = ['180,140,255', '220,190,100', '160,120,255', '200,170,80'];
+      for (let i = 0; i < 55; i++) {
+        const bright = i < 14;
+        const col    = COLS[i % COLS.length];
+        const a      = bright ? (0.55 + Math.random() * 0.35) : (0.18 + Math.random() * 0.22);
+        const h      = bright ? (2 + Math.random() * 4)       : (0.8 + Math.random() * 1.6);
+        const wPct   = bright ? (14 + Math.random() * 28)     : (5 + Math.random() * 15);
+        const dur    = bright ? (8 + Math.random() * 6)       : (14 + Math.random() * 10);
+        const del    = -(Math.random() * dur);
+        const topPct = Math.random() * 110 - 5;
+
+        const el = document.createElement('div');
+        el.className = 'sp-line';
+        el.style.left     = '0';
+        el.style.top      = topPct + '%';
+        el.style.width    = wPct + '%';
+        el.style.height   = h + 'px';
+        el.style.background = 'linear-gradient(90deg, transparent 0%, rgba(' + col + ',' + a + ') 25%, rgba(' + col + ',' + (a * 1.2) + ') 55%, rgba(' + col + ',' + (a * 0.6) + ') 80%, transparent 100%)';
+        el.style.animationDuration = dur + 's';
+        el.style.animationDelay   = del + 's';
+        container.appendChild(el);
+      }
+    })();
+
+    /* =====================================================
+       ANIMATED BACKGROUND — Particles
+    ===================================================== */
+    (function buildParticles() {
+      const container = document.getElementById('sp-particles-layer');
+      const HUES = [300, 48, 195, 350, 220, 160];
+      for (let i = 0; i < 160; i++) {
+        const hue  = HUES[i % HUES.length];
+        const size = 1.2 + Math.random() * 3.2;
+        const a    = 0.2 + Math.random() * 0.65;
+        const dur  = 5 + Math.random() * 12;
+        const del  = -(Math.random() * dur);
+        const py   = -(25 + Math.random() * 130);
+        const px   = (Math.random() - 0.5) * 50;
+
+        const el = document.createElement('div');
+        el.className = 'sp-particle';
+        el.style.left    = Math.random() * 100 + '%';
+        el.style.top     = Math.random() * 100 + '%';
+        el.style.width   = size + 'px';
+        el.style.height  = size + 'px';
+        el.style.opacity = a;
+        el.style.background   = 'hsla(' + hue + ',80%,72%,1)';
+        el.style.boxShadow    = '0 0 ' + (size * 2.5) + 'px hsla(' + hue + ',90%,72%,0.7)';
+        el.style.setProperty('--pa',  String(a * 0.1));
+        el.style.setProperty('--pa2', String(a));
+        el.style.setProperty('--py',  py + 'px');
+        el.style.setProperty('--px',  px + 'px');
+        el.style.animationDuration = dur + 's';
+        el.style.animationDelay   = del + 's';
+        container.appendChild(el);
+      }
+    })();
+
+    /* =====================================================
+       ACCENT COLORS — per character hash
+    ===================================================== */
+    /**
+     * Derives a per-character accent colour pair from the display name hash.
+     * @param {string} name
+     * @returns {{ primary: string, secondary: string }}
+     */
+    function spAccentColors(name) {
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+      const hue = hash % 360;
+      return {
+        primary:   'hsl(' + hue + ', 85%, 55%)',
+        secondary: 'hsl(' + ((hue + 150) % 360) + ', 80%, 60%)'
+      };
+    }
+
+    /* =====================================================
+       SLEEK PHANTOM LAYOUT
+    ===================================================== */
+    /**
+     * Builds the Sleek Phantom roster list and portrait stage.
+     * Hover on a name selects it; click logs in.
+     * @param {object[]} valid
+     * @param {boolean} showNames
+     * @param {Audio|null} hoverAudio
+     * @param {Audio|null} joinAudio
+     */
+    function buildSleekPhantomLayout(valid, showNames, hoverAudio, joinAudio) {
+      const els = {
+        rosterList: document.getElementById('sp-roster-list'),
+        flash:      document.getElementById('sp-flash'),
+        portrait:   document.getElementById('sp-portrait'),
+        portraitBg: document.getElementById('sp-portrait-bg'),
+        portraitImg:document.getElementById('sp-portrait-img'),
+        initial:    document.getElementById('sp-portrait-initial'),
+        sublabel:   document.getElementById('sp-portrait-sublabel'),
+        infoPanel:  document.getElementById('sp-info-panel'),
+        charName:   document.getElementById('sp-char-name'),
+      };
+
+      let activeIndex = -1;
+      let swapTimeout = null;
+
+      function spSelectCharacter(index) {
+        if (index === activeIndex) return;
+        activeIndex = index;
+        const entry  = valid[index];
+        const name   = displayName(entry);
+        const colors = spAccentColors(name);
+
+        els.rosterList.querySelectorAll('.sp-char-btn').forEach(function(btn, i) {
+          btn.classList.toggle('active', i === index);
+        });
+
+        els.flash.classList.add('active');
+        setTimeout(function() { els.flash.classList.remove('active'); }, 50);
+
+        els.portrait.classList.remove('visible');
+        els.infoPanel.classList.remove('visible');
+
+        if (swapTimeout) clearTimeout(swapTimeout);
+
+        document.documentElement.style.setProperty('--sp-primary',   colors.primary);
+        document.documentElement.style.setProperty('--sp-secondary', colors.secondary);
+
+        swapTimeout = setTimeout(function() {
+          els.charName.textContent  = showNames ? name : '';
+          els.sublabel.textContent  = showNames ? name.toUpperCase() : '';
+          els.initial.textContent   = name.charAt(0).toUpperCase();
+
+          // Portrait background gradient (hue from accent)
+          var hue = (function() {
+            var h = 0;
+            for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+            return h % 360;
+          })();
+          els.portraitBg.style.background =
+            'linear-gradient(170deg, hsl(' + hue + ',50%,22%) 0%, hsl(' + hue + ',60%,14%) 45%, hsl(' + hue + ',40%,7%) 100%)';
+
+          if (entry.imageUrl) {
+            els.portraitImg.src = toAbsolute(entry.imageUrl);
+            els.portraitImg.alt = name;
+            els.portraitImg.style.display = 'block';
+            els.initial.style.display = 'none';
+            els.portraitImg.onload = function() {
+              els.portrait.classList.add('visible');
+              els.infoPanel.classList.add('visible');
+            };
+            // If already cached
+            if (els.portraitImg.complete && els.portraitImg.naturalWidth > 0) {
+              els.portrait.classList.add('visible');
+              els.infoPanel.classList.add('visible');
+            }
+          } else {
+            els.portraitImg.style.display = 'none';
+            els.initial.style.display = '';
+            els.portrait.classList.add('visible');
+            els.infoPanel.classList.add('visible');
+          }
+        }, 300);
+      }
+
+      for (var i = 0; i < valid.length; i++) {
+        (function(entry, idx) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'sp-char-btn';
+          btn.textContent = displayName(entry);
+
+          btn.addEventListener('mouseenter', function() {
+            if (hoverAudio) { hoverAudio.currentTime = 0; hoverAudio.play().catch(function() {}); }
+            spSelectCharacter(idx);
+          });
+          btn.addEventListener('click', function() {
+            if (entry.requirePassword) {
+              showPasswordDialog(function(pw) {
+                if (joinAudio) { joinAudio.currentTime = 0; joinAudio.play().catch(function() {}); }
+                loginAs(entry.userId, pw);
+              });
+            } else {
+              if (joinAudio) { joinAudio.currentTime = 0; joinAudio.play().catch(function() {}); }
+              loginAs(entry.userId);
+            }
+          });
+
+          els.rosterList.appendChild(btn);
+        })(valid[i], i);
+      }
+
+      setTimeout(function() { spSelectCharacter(0); }, 100);
+    }
+
+    /* =====================================================
+       INIT
+    ===================================================== */
+    async function init() {
+      injectSharedStyles();
+      var statusEl = document.getElementById('cl-status');
+      var jsonPath = await resolveJsonPath();
+      if (!jsonPath) { await showNoWorldPage(); return; }
+
+      var res = await fetch(jsonPath, { cache: 'no-cache' });
+      if (res.status === 404) { await showNoWorldPage(); return; }
+      if (!res.ok) { statusEl.textContent = 'Could not load player list (' + res.status + ').'; return; }
+
+      var raw = await res.json();
+      var entries    = Array.isArray(raw) ? raw : (raw.entries    ?? []);
+      var appearance = Array.isArray(raw) ? {}  : (raw.appearance ?? {});
+      var soundCfg   = Array.isArray(raw) ? {}  : (raw.sounds     ?? {});
+
+      var hoverAudio = new Audio(toAbsolute(soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3'));
+      var joinAudio  = new Audio(toAbsolute(soundCfg.joinSound  || 'modules/custom-login/assets/sfx/join.mp3'));
+      hoverAudio.volume = 0.6;
+      joinAudio.volume  = 0.8;
+
+      // Apply custom background if set — and hide the animated lines
+      if (appearance.backgroundUrl) {
+        applyBackground(appearance.backgroundUrl, { videoAudio: appearance.videoAudio });
+        document.getElementById('sp-bg-lines').style.opacity  = '0';
+        document.getElementById('sp-bg-base').style.opacity   = '0';
+        document.getElementById('sp-scanlines').style.opacity = '0.18';
+      }
+
+      var faviconLink = document.createElement('link');
+      faviconLink.rel  = 'shortcut icon';
+      faviconLink.href = toAbsolute(appearance.faviconUrl || 'modules/custom-login/assets/screens/favicon.ico');
+      document.head.appendChild(faviconLink);
+
+      document.title = appearance.screenTitle || 'Welcome';
+
+      var valid = entries.filter(function(e) { return e.userId; });
+      if (!valid.length) {
+        statusEl.textContent = 'No players configured yet. Ask your GM to set up the welcome page.';
+        return;
+      }
+
+      var showNames = (appearance.showNames ?? 'yes') !== 'no';
+      statusEl.remove();
+
+      document.body.classList.add('layout-sleek-phantom');
+      buildSleekPhantomLayout(valid, showNames, hoverAudio, joinAudio);
+    }
+
+    init();
+  </script>
+</body>
+</html>

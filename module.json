@@ -1,0 +1,30 @@
+{
+  "id": "custom-login",
+  "title": "Custom Login",
+  "version": "0.1.8",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "14"
+  },
+  "authors": [
+    {
+      "name": "Mestre Digital"
+    }
+  ],
+
+  "description": "Provides a customizable welcome page with character art that lets players log in by clicking their character portrait.",
+
+  "esmodules": [
+    "scripts/custom-login.js"
+  ],
+
+  "styles": [
+    "styles/custom-login.css"
+  ],
+
+  "persistentStorage": true,
+
+  "url": "https://github.com/brunocalado/custom-login",
+  "manifest": "https://raw.githubusercontent.com/brunocalado/custom-login/main/module.json",
+  "download": "https://codeload.github.com/brunocalado/custom-login/zip/main"
+}

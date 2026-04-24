@@ -1,0 +1,726 @@
+/* =====================================================
+   Custom Login — Module Styles
+   Scoped to .custom-login / .cl-* to avoid conflicts.
+   ===================================================== */
+
+/* ---- Settings button injected into the Settings sidebar ---- */
+button[data-action="custom-login-welcome"].cl-settings-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  margin: 0.5rem 0;
+  padding: 0.45rem 0.85rem;
+  width: 100%;
+  background: #3a3a3a;
+  color: #f5f2e8;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+button[data-action="custom-login-welcome"].cl-settings-btn:hover {
+  background: #4a4a4a;
+  border-color: rgba(255,255,255,0.3);
+}
+
+/* =====================================================
+   Welcome Editor (ApplicationV2 window) — solid background
+   ===================================================== */
+
+.application.welcome-editor,
+.application.appearance-editor,
+.application.sound-editor,
+.application.system-editor {
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.1);
+  max-height: 85vh;
+}
+
+.application.welcome-editor .window-header,
+.application.appearance-editor .window-header,
+.application.sound-editor .window-header,
+.application.system-editor .window-header {
+  background: #161616;
+  color: #f5f2e8;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.application.welcome-editor .window-content,
+.application.appearance-editor .window-content,
+.application.sound-editor .window-content,
+.application.system-editor .window-content {
+  padding: 0;
+  background: #1e1e1e;
+  max-height: calc(85vh - 40px);
+  overflow-y: auto;
+}
+
+.cl-editor-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 1.25rem 1.25rem;
+  color: #eae7db;
+}
+
+/* Description paragraph */
+.cl-description {
+  font-size: 0.85rem;
+  color: #d6d3c6;
+  line-height: 1.5;
+  border-left: 3px solid #7a8aa0;
+  padding-left: 0.7rem;
+}
+
+.cl-description strong {
+  color: #ffffff;
+}
+
+/* ---- Drag handle ---- */
+.cl-drag-handle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  color: rgba(255,255,255,0.25);
+  cursor: grab;
+  font-size: 0.85rem;
+  transition: color 140ms;
+}
+.cl-drag-handle:hover { color: rgba(255,255,255,0.6); }
+.cl-drag-handle:active { cursor: grabbing; }
+
+/* Dragging source row */
+.cl-entry-row.cl-dragging { opacity: 0.4; }
+
+/* Drop target indicator */
+.cl-entry-row.cl-drag-over {
+  outline: 1px solid rgba(122,164,214,0.6);
+  background: #2a3040;
+}
+
+/* ---- Entry list ---- */
+.cl-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cl-entry-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  background: #262626;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 5px;
+  flex-wrap: nowrap;
+}
+
+/* ---- Thumbnail ---- */
+.cl-thumb-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+}
+
+.cl-thumb {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 4px;
+  display: block;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.cl-thumb--empty {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #333;
+  border-radius: 4px;
+  font-size: 0.58rem;
+  color: #888;
+  text-align: center;
+  padding: 2px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Hover tooltip — larger preview */
+.cl-thumb-tooltip {
+  display: none;
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  width: 140px;
+  background: #111;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.7);
+  pointer-events: none;
+}
+
+.cl-thumb-tooltip img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.cl-thumb-wrap:hover .cl-thumb-tooltip {
+  display: block;
+}
+
+/* ---- Username label ---- */
+.cl-user-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.875rem;
+  color: #ddd;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Browse button (compact) ---- */
+.cl-browse-btn {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.55rem;
+}
+
+/* ---- Per-entry show name select ---- */
+.cl-show-name-select {
+  flex-shrink: 0;
+  width: 160px;
+  padding: 0.25rem 0.4rem;
+  background: #2e2e2e;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 4px;
+  color: #f5f2e8;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.cl-show-name-select:focus {
+  outline: none;
+  border-color: #7aa4d6;
+  box-shadow: 0 0 0 1px #7aa4d6;
+}
+
+.cl-show-name-select option {
+  background-color: #262626;
+  color: #f5f2e8;
+}
+
+/* ---- Appearance editor select (kept for appearance-editor.hbs) ---- */
+.cl-user-select {
+  flex: 1;
+  min-width: 0;
+  padding: 0.35rem 0.5rem;
+  background: #2e2e2e;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 4px;
+  color: #f5f2e8;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.cl-user-select:focus {
+  outline: none;
+  border-color: #7aa4d6;
+  box-shadow: 0 0 0 1px #7aa4d6;
+}
+
+.cl-user-select option {
+  background-color: #262626;
+  color: #f5f2e8;
+}
+
+.cl-user-select option:checked,
+.cl-user-select option:hover {
+  background-color: #3a5a8a;
+  color: #ffffff;
+}
+
+/* ---- Buttons ---- */
+.cl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  padding: 0.35rem 0.7rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 140ms, border-color 140ms, color 140ms;
+  white-space: nowrap;
+}
+
+.cl-btn--primary {
+  background: #4a7c59;
+  color: #ffffff;
+  border-color: #6aa47a;
+}
+.cl-btn--primary:hover {
+  background: #5a9468;
+}
+
+.cl-btn--secondary {
+  background: #3a3a3a;
+  color: #f5f2e8;
+  border-color: rgba(255,255,255,0.2);
+}
+.cl-btn--secondary:hover {
+  background: #4a4a4a;
+}
+
+.cl-btn--ghost {
+  background: #2e2e2e;
+  color: #e8e5d8;
+  border-color: rgba(255,255,255,0.18);
+}
+.cl-btn--ghost:hover {
+  background: #3a3a3a;
+  color: #ffffff;
+  border-color: rgba(255,255,255,0.3);
+}
+
+.cl-btn--danger {
+  background: #3a1e1e;
+  color: #e09090;
+  border-color: rgba(224,144,144,0.4);
+}
+.cl-btn--danger:hover {
+  background: #5a2a2a;
+  color: #ffc0c0;
+  border-color: rgba(224,144,144,0.7);
+}
+
+.cl-btn--icon {
+  padding: 0.35rem 0.55rem;
+}
+
+/* ---- Per-user Sound buttons ---- */
+/* Default: gray / disabled-looking — no custom sound, using global */
+.cl-btn--sound {
+  flex-shrink: 0;
+  background: #2a2a2a;
+  color: #666;
+  border-color: rgba(255,255,255,0.1);
+  font-size: 0.73rem;
+  padding: 0.25rem 0.5rem;
+}
+.cl-btn--sound:hover {
+  background: #353535;
+  color: #999;
+  border-color: rgba(255,255,255,0.2);
+}
+
+/* Active: colored — custom sound is set for this user */
+.cl-btn--sound.cl-btn--sound-active {
+  background: #2a3f5a;
+  color: #7ab4e8;
+  border-color: rgba(122,180,232,0.45);
+}
+.cl-btn--sound.cl-btn--sound-active:hover {
+  background: #3a5070;
+  color: #a0ccf8;
+  border-color: rgba(122,180,232,0.7);
+}
+
+/* ---- Actions row ---- */
+.cl-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.cl-actions-right {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ---- URL row ---- */
+.cl-url-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  background: #171717;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 5px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.cl-url-label {
+  color: #d6d3c6;
+  white-space: nowrap;
+}
+
+.cl-url-display {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #9ec5ff;
+  font-family: monospace;
+  font-size: 0.78rem;
+  background: transparent;
+}
+
+/* ---- Empty state ---- */
+.cl-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 1rem;
+  color: #a8a59a;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.cl-empty-state i {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+
+.cl-empty-state strong {
+  color: #f5f2e8;
+}
+
+/* =====================================================
+   Appearance Editor — additional styles
+   ===================================================== */
+
+.cl-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cl-section-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #d6d3c6;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 0.3rem;
+  margin-bottom: 0.1rem;
+}
+
+.cl-bg-preview-wrap {
+  width: 100%;
+  height: 160px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #111;
+  border: 1px solid rgba(255,255,255,0.1);
+  flex-shrink: 0;
+}
+
+.cl-bg-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.cl-bg-preview--empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  color: rgba(255,255,255,0.3);
+  font-size: 0.85rem;
+}
+
+.cl-bg-preview--empty i {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+
+.cl-bg-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.cl-text-input {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  background: #2e2e2e;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 4px;
+  color: #f5f2e8;
+  font-size: 0.9rem;
+}
+
+.cl-text-input:focus {
+  outline: none;
+  border-color: #7aa4d6;
+  box-shadow: 0 0 0 1px #7aa4d6;
+}
+
+.cl-hint {
+  font-size: 0.73rem;
+  color: #a8a59a;
+  line-height: 1.4;
+}
+
+.cl-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #e8e5d8;
+  cursor: pointer;
+}
+
+/* ---- Sound editor field row ---- */
+.cl-sound-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cl-sound-row .cl-text-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---- System editor field rows ---- */
+.cl-field-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cl-field-label {
+  flex: 0 0 6rem;
+  font-size: 0.82rem;
+  color: #d6d3c6;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cl-field-row .cl-text-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---- Per-user password toggle ---- */
+.cl-pw-toggle {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.25rem 0.55rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: #2e2e2e;
+  color: #888;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  transition: background 140ms, border-color 140ms, color 140ms;
+}
+
+.cl-pw-toggle:hover {
+  background: #3a3a3a;
+  border-color: rgba(255,255,255,0.28);
+  color: #bbb;
+}
+
+.cl-pw-toggle input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.cl-pw-toggle:has(input:checked) {
+  background: #3a2a5a;
+  border-color: rgba(160,120,255,0.5);
+  color: #c8a8ff;
+}
+
+/* ---- Per-user show-on-screen toggle ---- */
+.cl-show-toggle {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.25rem 0.55rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: #1a3a1a;
+  color: #80e080;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  transition: background 140ms, border-color 140ms, color 140ms;
+}
+
+.cl-show-toggle:hover {
+  background: #223a22;
+  border-color: rgba(80,200,80,0.4);
+  color: #a0f0a0;
+}
+
+.cl-show-toggle input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.cl-show-toggle:has(input:checked) {
+  background: #1a3a1a;
+  border-color: rgba(80,200,80,0.5);
+  color: #80e080;
+}
+
+.cl-show-toggle:not(:has(input:checked)) {
+  background: #3a1a1a;
+  border-color: rgba(200,80,80,0.4);
+  color: #e08080;
+}
+
+/* ---- Sound enable/disable toggle ---- */
+.cl-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  user-select: none;
+  width: fit-content;
+}
+
+.cl-toggle-label input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.cl-toggle-track {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: #3a3a3a;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 999px;
+  transition: background 160ms ease, border-color 160ms ease;
+  flex-shrink: 0;
+}
+
+.cl-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: #888;
+  border-radius: 50%;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.cl-toggle-label:has(input:checked) .cl-toggle-track {
+  background: #3a6e4a;
+  border-color: rgba(100,200,130,0.4);
+}
+
+.cl-toggle-label:has(input:checked) .cl-toggle-thumb {
+  transform: translateX(16px);
+  background: #7ec89a;
+}
+
+.cl-toggle-text {
+  font-size: 0.8rem;
+  color: #a8a59a;
+  min-width: 3.5rem;
+  transition: color 160ms ease;
+}
+
+.cl-toggle-label:has(input:checked) .cl-toggle-text {
+  color: #7ec89a;
+}
+
+/* ---- Tab navigation (appearance-editor) ---- */
+.cl-tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 0.25rem;
+}
+
+.cl-tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.85rem;
+  transition: color 140ms, border-color 140ms;
+}
+
+.cl-tab-btn:hover {
+  color: rgba(255,255,255,0.8);
+}
+
+.cl-tab-btn--active {
+  color: #f5f2e8;
+  border-bottom-color: #7a8aa0;
+}
+
+.cl-tab-panel--hidden {
+  display: none;
+}
+
+/* Favicon preview */
+.cl-favicon-preview-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: #262626;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 5px;
+  margin-bottom: 0.5rem;
+}
+
+.cl-favicon-preview {
+  max-width: 32px;
+  max-height: 32px;
+  object-fit: contain;
+}

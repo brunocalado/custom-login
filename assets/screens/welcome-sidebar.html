@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #e8e8e8;
+    }
+
+    body.layout-sidebar { background: #060913; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+    /* --- FUNDO ATMOSFÉRICO E ANIMADO --- */
+    .cl-bg-layer {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none; overflow: hidden;
+    }
+
+    /* Ocultar fundo se houver imagem customizada do GM */
+    body.has-custom-bg .cl-bg-layer { display: none !important; }
+
+    body.layout-sidebar .cl-bg-orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(80px);
+      animation: pulse-glow 8s infinite alternate;
+      pointer-events: none; z-index: 1;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50%      { opacity: 0.5; transform: scale(1.05); }
+    }
+
+    /* Padrão animado (Grid inclinado/tecnológico) */
+    .cl-animated-pattern {
+      position: absolute; inset: -50%; z-index: 2;
+      background-image:
+        linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+      background-size: 60px 60px;
+      transform-origin: center;
+      animation: panTechGrid 40s linear infinite;
+    }
+    @keyframes panTechGrid {
+      0% { transform: translateY(0) translateX(0) rotate(15deg); }
+      100% { transform: translateY(60px) translateX(60px) rotate(15deg); }
+    }
+
+    /* Partículas (Dados/Centelhas flutuantes) */
+    .data-mote {
+      position: absolute; border-radius: 50%;
+      background: #e0faff;
+      box-shadow: 0 0 12px 2px #38bdf8;
+      opacity: 0; pointer-events: none; z-index: 3;
+      animation: floatData var(--dur) infinite ease-in;
+    }
+    @keyframes floatData {
+      0% { transform: translateY(10vh) scale(0); opacity: 0; }
+      20% { opacity: var(--max-op); transform: translateY(-10vh) scale(1); }
+      80% { opacity: var(--max-op); transform: translateY(-70vh) scale(1.2); }
+      100% { transform: translateY(-100vh) scale(0); opacity: 0; }
+    }
+
+    /* --- LAYOUT DA BARRA LATERAL --- */
+    .cl-sidebar-page { display: none; position: fixed; inset: 0; z-index: 10; }
+    body.layout-sidebar .cl-sidebar-page {
+      display: flex; align-items: center; justify-content: flex-start;
+      padding-left: clamp(1.5rem, 6vw, 6rem);
+    }
+
+    body.layout-sidebar .cl-panel {
+      position: relative; z-index: 20;
+      width: min(340px, calc(100vw - 3rem));
+      max-height: 85vh; overflow-y: auto;
+      background: rgba(10, 15, 28, 0.78);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(56, 189, 248, 0.18);
+      border-radius: 1rem; padding: 1.5rem;
+      box-shadow:
+        0 25px 50px -12px rgba(0,0,0,0.8),
+        inset 0 1px 1px rgba(255,255,255,0.08),
+        0 0 24px rgba(56,189,248,0.06);
+      transition: border-color 0.35s ease, box-shadow 0.35s ease;
+      animation: fadeUp 0.55s cubic-bezier(.16,1,.3,1) both;
+      
+      /* Scrollbar customizada */
+      scrollbar-width: thin;
+      scrollbar-color: rgba(56, 189, 248, 0.4) transparent;
+    }
+    body.layout-sidebar .cl-panel::-webkit-scrollbar { width: 6px; }
+    body.layout-sidebar .cl-panel::-webkit-scrollbar-thumb { background-color: rgba(56, 189, 248, 0.4); border-radius: 10px; }
+
+    body.layout-sidebar .cl-panel:hover {
+      border-color: rgba(56,189,248,0.38);
+      box-shadow:
+        0 25px 50px -12px rgba(0,0,0,0.8),
+        inset 0 1px 1px rgba(255,255,255,0.12),
+        0 0 32px rgba(56,189,248,0.14);
+    }
+
+    body.layout-sidebar #cl-user-list:hover .cl-user-btn {
+      opacity: 0.4; filter: grayscale(70%);
+      transition: opacity 0.25s ease, filter 0.25s ease;
+    }
+    body.layout-sidebar #cl-user-list .cl-user-btn:hover {
+      opacity: 1 !important; filter: grayscale(0%) !important;
+      transform: scale(1.02);
+    }
+
+    body.layout-sidebar .cl-user-btn {
+      width: 100%; display: flex; align-items: center;
+      justify-content: space-between; gap: 0.75rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 0.75rem; padding: 0.65rem 0.9rem;
+      cursor: pointer; text-align: left; color: #e2e8f0;
+      transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+      margin-bottom: 0.5rem;
+    }
+    body.layout-sidebar .cl-user-btn:last-child { margin-bottom: 0; }
+    body.layout-sidebar .cl-user-btn:hover { border-color: #38bdf8; background: rgba(255,255,255,0.08); }
+
+    body.layout-sidebar .cl-avatar {
+      flex-shrink: 0; width: 40px; height: 40px;
+      border-radius: 50%; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 600; color: #fff;
+      transition: transform 0.25s ease;
+      background: #334155;
+    }
+    body.layout-sidebar .cl-user-btn:hover .cl-avatar { transform: scale(1.1); }
+    body.layout-sidebar .cl-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    body.layout-sidebar .cl-user-name {
+      flex: 1; font-size: 0.925rem; font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    body.layout-sidebar .cl-arrow {
+      flex-shrink: 0; opacity: 0; color: #38bdf8; font-size: 1.1rem;
+      transition: opacity 0.2s ease;
+      width: 18px; height: 18px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    body.layout-sidebar .cl-user-btn:hover .cl-arrow { opacity: 1; }
+    body.layout-sidebar .cl-arrow::after { content: '→'; font-family: system-ui, sans-serif; }
+
+    /* Novo rótulo global posicionado no espaço vazio à direita */
+    .cl-global-name-label {
+      position: fixed;
+      bottom: 8%;
+      /* Posicionado a 60% da tela para ficar centralizado no espaço que sobra da barra lateral */
+      left: 60%;
+      transform: translateX(-50%);
+      z-index: 15;
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.8rem, 4vw, 4rem);
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.95);
+      text-transform: uppercase;
+      text-align: center;
+      letter-spacing: 0.12em;
+      text-shadow: 0 4px 15px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.6);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      white-space: nowrap;
+    }
+    .cl-global-name-label.visible {
+      opacity: 1;
+      transform: translate(-50%, -10px);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    #cl-status {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-family: sans-serif; font-size: 1.2rem; color: #aaa; pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="cl-bg-layer" id="cl-bg-layer">
+    <div class="cl-bg-orb" style="width:380px;height:380px;background:#3b82f6;opacity:0.15;top:-10%;left:-10%;"></div>
+    <div class="cl-bg-orb" style="width:500px;height:500px;background:#312e81;opacity:0.25;bottom:-20%;right:-10%;animation-delay:-4s;"></div>
+    <div class="cl-animated-pattern"></div>
+  </div>
+
+  <div class="cl-sidebar-page">
+    <div class="cl-panel">
+      <div id="cl-user-list"></div>
+    </div>
+  </div>
+
+  <!-- Rótulo global para exibir o nome do jogador no espaço vazio -->
+  <div id="cl-global-name-label" class="cl-global-name-label"></div>
+
+  <div id="cl-status">Loading&hellip;</div>
+
+  <script src="/modules/custom-login/assets/screens/shared.js"></script>
+  <script>
+    try {
+      history.replaceState(null, '', 'index.html');
+    } catch (e) {
+      console.warn('O replaceState foi bloqueado. Ignorando.', e);
+    }
+
+    /**
+     * Gera as partículas flutuantes (Motes de Dados/Magia)
+     */
+    function createParticles() {
+      const container = document.getElementById('cl-bg-layer');
+      if (!container) return;
+      
+      for (let i = 0; i < 30; i++) {
+        const mote = document.createElement('div');
+        mote.className = 'data-mote';
+        
+        const size = Math.random() * 3 + 1;
+        const left = Math.random() * 100;
+        const dur = Math.random() * 15 + 10;
+        const delay = Math.random() * 10;
+        const maxOp = Math.random() * 0.4 + 0.1;
+
+        mote.style.width = `${size}px`;
+        mote.style.height = `${size}px`;
+        mote.style.left = `${left}vw`;
+        mote.style.bottom = `-${Math.random() * 20}vh`;
+        
+        mote.style.setProperty('--dur', `${dur}s`);
+        mote.style.setProperty('--max-op', maxOp);
+        mote.style.animationDelay = `${delay}s`;
+
+        container.appendChild(mote);
+      }
+    }
+
+    /**
+     * Derives a deterministic background colour from the user's display name.
+     * @param {string} name
+     * @returns {string} CSS colour value
+     */
+    function nameToColor(name) {
+      const palette = [
+        '#7c3aed','#2563eb','#0891b2','#059669',
+        '#d97706','#dc2626','#db2777','#4f46e5'
+      ];
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+      return palette[hash % palette.length];
+    }
+
+    /**
+     * Builds the avatar element — image when available, coloured initial otherwise.
+     * @param {object} entry
+     * @returns {HTMLElement}
+     */
+    function buildAvatar(entry) {
+      const avatar = document.createElement('div');
+      avatar.className = 'cl-avatar';
+      if (entry.imageUrl) {
+        const img = document.createElement('img');
+        img.src = toAbsolute(entry.imageUrl);
+        img.alt = displayName(entry);
+        img.onerror = () => {
+          img.remove();
+          avatar.textContent = displayName(entry).charAt(0).toUpperCase();
+        };
+        avatar.appendChild(img);
+      } else {
+        avatar.style.background = nameToColor(displayName(entry));
+        avatar.textContent = displayName(entry).charAt(0).toUpperCase();
+      }
+      return avatar;
+    }
+
+    /**
+     * Builds and appends a sidebar user button to the list.
+     * @param {object} entry - User entry from welcome.json
+     * @param {boolean} showNames - Whether names are globally enabled
+     * @param {HTMLElement} list - Target list container
+     * @param {Audio|null} hoverAudio
+     * @param {Audio|null} joinAudio
+     */
+    function buildUserButton(entry, showNames, list, hoverAudio, joinAudio) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cl-user-btn';
+
+      const avatar = buildAvatar(entry);
+      const name   = document.createElement('span');
+      name.className = 'cl-user-name';
+      name.textContent = displayName(entry);
+      const arrow = document.createElement('span');
+      arrow.className = 'cl-arrow';
+      arrow.setAttribute('aria-hidden', 'true');
+
+      btn.appendChild(avatar);
+      btn.appendChild(name);
+      btn.appendChild(arrow);
+
+      btn.addEventListener('mouseenter', () => {
+        if (showNames) {
+          const globalLabel = document.getElementById('cl-global-name-label');
+          if (globalLabel) {
+            globalLabel.textContent = displayName(entry);
+            globalLabel.classList.add('visible');
+          }
+        }
+        if (hoverAudio) { hoverAudio.currentTime = 0; hoverAudio.play().catch(() => {}); }
+      });
+      
+      btn.addEventListener('mouseleave', () => {
+        if (showNames) {
+          const globalLabel = document.getElementById('cl-global-name-label');
+          if (globalLabel) {
+            globalLabel.classList.remove('visible');
+          }
+        }
+      });
+      
+      btn.addEventListener('click', () => {
+        if (entry.requirePassword) {
+          showPasswordDialog((pw) => {
+            if (joinAudio) { joinAudio.currentTime = 0; joinAudio.play().catch(() => {}); }
+            loginAs(entry.userId, pw);
+          });
+        } else {
+          if (joinAudio) { joinAudio.currentTime = 0; joinAudio.play().catch(() => {}); }
+          loginAs(entry.userId);
+        }
+      });
+
+      list.appendChild(btn);
+    }
+
+    async function init() {
+      injectSharedStyles();
+      const statusEl = document.getElementById('cl-status');
+      const jsonPath = await resolveJsonPath();
+      if (!jsonPath) { await showNoWorldPage(); return; }
+
+      const res = await fetch(jsonPath, { cache: 'no-cache' });
+      if (res.status === 404) { await showNoWorldPage(); return; }
+      if (!res.ok) { statusEl.textContent = 'Could not load player list (' + res.status + ').'; return; }
+
+      const raw = await res.json();
+      const entries    = Array.isArray(raw) ? raw : (raw.entries    ?? []);
+      const appearance = Array.isArray(raw) ? {}  : (raw.appearance ?? {});
+      const soundCfg   = Array.isArray(raw) ? {}  : (raw.sounds     ?? {});
+
+      const hoverAudio = new Audio(toAbsolute(soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3'));
+      const joinAudio  = new Audio(toAbsolute(soundCfg.joinSound  || 'modules/custom-login/assets/sfx/join.mp3'));
+      hoverAudio.volume = 0.6;
+      joinAudio.volume  = 0.8;
+
+      if (appearance.backgroundUrl) {
+        document.body.classList.add('has-custom-bg');
+        applyBackground(appearance.backgroundUrl, { videoAudio: appearance.videoAudio });
+      }
+
+      const faviconLink = document.createElement('link');
+      faviconLink.rel = 'shortcut icon';
+      faviconLink.href = toAbsolute(appearance.faviconUrl || 'modules/custom-login/assets/screens/favicon.ico');
+      document.head.appendChild(faviconLink);
+
+      document.title = appearance.screenTitle || 'Welcome';
+
+      const valid = entries.filter(e => e.userId);
+      if (!valid.length) {
+        statusEl.textContent = 'No players configured yet. Ask your GM to set up the welcome page.';
+        return;
+      }
+
+      const showNames = (appearance.showNames ?? 'yes') !== 'no';
+      statusEl.remove();
+
+      document.body.classList.add('layout-sidebar');
+      
+      // Inicializa animações de fundo
+      createParticles();
+
+      const list = document.getElementById('cl-user-list');
+      for (const entry of valid) {
+        buildUserButton(entry, showNames, list, hoverAudio, joinAudio);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

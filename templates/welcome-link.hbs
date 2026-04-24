@@ -1,0 +1,19 @@
+{{!-- Welcome Page Link template --}}
+<div class="cl-welcome-link">
+  <div class="cl-editor-wrap">
+    <div class="cl-url-row">
+      <code class="cl-url-display" data-action="copyLink" style="cursor:pointer;" title="Click to copy">{{welcomeUrl}}</code>
+      <button type="button" class="cl-btn cl-btn--ghost cl-btn--icon" data-action="copyLink" aria-label="Copy link">
+        <i class="fas fa-copy"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="cl-url-hint">
+    <p>The default URL can be long. You can simplify it using a URL shortener service:</p>
+    <ul>
+      <li><a href="https://tinyurl.com" target="_blank" rel="noopener noreferrer">TinyURL</a></li>
+      <li><a href="https://bitly.com" target="_blank" rel="noopener noreferrer">Bitly</a></li>
+    </ul>
+  </div>
+</div>

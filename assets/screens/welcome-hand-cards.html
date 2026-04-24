@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cinzel+Decorative:wght@400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #010603;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #e8e8e8;
+    }
+
+    body.layout-hand-cards { background: #010603; }
+
+    .cl-hand-page {
+      display: none;
+      position: fixed; inset: 0; z-index: 2;
+      align-items: center; justify-content: center;
+    }
+    body.layout-hand-cards .cl-hand-page { display: flex; }
+
+    /* Camada 1: Nebulosa pulsante */
+    .cl-hand-page::before {
+      content: '';
+      position: fixed; inset: -20%; z-index: 0;
+      background:
+        radial-gradient(ellipse at 15% 50%, rgba(20, 100, 60, 0.4) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 30%, rgba(10, 80, 50, 0.35) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 100%, rgba(40, 120, 80, 0.3) 0%, transparent 60%),
+        radial-gradient(ellipse at 50% 0%, rgba(15, 90, 70, 0.2) 0%, transparent 50%);
+      filter: blur(40px);
+      animation: mystical-pulse 18s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    /* Camada 2: Textura geométrica arcana */
+    .cl-hand-page::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg width='160' height='160' viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%236bbd70' stroke-width='1' stroke-opacity='0.12'%3E%3Cpath d='M80 0 v160 M0 80 h160' /%3E%3Ccircle cx='80' cy='80' r='50' /%3E%3Ccircle cx='80' cy='80' r='72' stroke-dasharray='4 8'/%3E%3Cpath d='M44.6 44.6 L115.4 115.4 M44.6 115.4 L115.4 44.6' stroke-opacity='0.08'/%3E%3C/g%3E%3C/svg%3E");
+      background-position: center;
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    /* Ocultar nebulosa e formas se houver um fundo customizado do GM */
+    body.has-custom-bg .cl-hand-page::before,
+    body.has-custom-bg .cl-hand-page::after {
+      display: none;
+    }
+
+    /* Camada 3: Vinheta inferior (Sombra para ancorar as cartas) */
+    .cl-hand-page-vignette {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 50%; z-index: 0;
+      background: linear-gradient(to top, rgba(1, 6, 3, 0.98) 0%, rgba(5, 20, 10, 0.5) 40%, transparent 100%);
+      pointer-events: none;
+    }
+
+    @keyframes mystical-pulse {
+      0% { transform: scale(1) rotate(0deg); opacity: 0.8; }
+      50% { transform: scale(1.15) translate(-2%, 3%) rotate(2deg); opacity: 1; }
+      100% { transform: scale(1.05) translate(2%, -3%) rotate(-1deg); opacity: 0.9; }
+    }
+
+    /* Partículas Mágicas */
+    .magic-particle {
+      position: absolute;
+      border-radius: 50%;
+      background: #fff;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0;
+      animation: floatUp var(--dur) infinite ease-in;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(10vh) scale(0); opacity: 0; }
+      20% { opacity: var(--max-op); transform: translateY(-10vh) scale(1); box-shadow: 0 0 12px 2px var(--glow); }
+      80% { opacity: var(--max-op); transform: translateY(-70vh) scale(1.2); box-shadow: 0 0 20px 4px var(--glow); }
+      100% { transform: translateY(-100vh) scale(0); opacity: 0; }
+    }
+
+    #cl-hand-inner { position: relative; z-index: 1; }
+
+    .cl-hand-hover-zone { position: absolute; cursor: pointer; }
+
+    .cl-hand-card-visual {
+      position: absolute;
+      bottom: 0; left: 0;
+      border-radius: 0.65rem; overflow: hidden; pointer-events: none;
+      transition: transform 300ms cubic-bezier(.16, 1, .3, 1), filter 300ms ease;
+    }
+    .cl-hand-card-visual img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: top center;
+      display: block; user-select: none; pointer-events: none;
+    }
+    .cl-hand-card-visual .cl-card-placeholder {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      background: #1e1e2e;
+      font-family: 'Cinzel', serif;
+      font-size: clamp(0.7rem, 1.2vw, 1rem);
+      color: rgba(255,255,255,0.5);
+      text-align: center; padding: 0.75rem;
+    }
+    .cl-hand-card-visual::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px; z-index: 2;
+      background: linear-gradient(90deg, transparent, rgba(180,140,255,0.75), rgba(220,190,100,0.85), rgba(180,140,255,0.75), transparent);
+    }
+    .cl-hand-card-visual::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 2px; z-index: 2;
+      background: linear-gradient(90deg, transparent, rgba(180,140,255,0.55), rgba(220,190,100,0.65), rgba(180,140,255,0.55), transparent);
+    }
+
+    .cl-hand-card-border {
+      position: absolute; inset: 0;
+      border-radius: 0.65rem;
+      box-shadow: inset 0 0 0 1px rgba(160,120,255,0.18);
+      pointer-events: none; z-index: 3;
+    }
+
+    /* Novo label global posicionado na parte inferior central */
+    .cl-global-name-label {
+      position: absolute;
+      bottom: 8%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.8rem, 3.5vw, 3.2rem);
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.95);
+      text-transform: uppercase;
+      text-align: center;
+      letter-spacing: 0.12em;
+      text-shadow: 0 4px 15px rgba(0, 0, 0, 0.9), 0 0 25px rgba(107, 189, 112, 0.5);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      white-space: nowrap;
+    }
+    .cl-global-name-label.visible {
+      opacity: 1;
+      transform: translate(-50%, -10px);
+    }
+  </style>
+</head>
+<body>
+  <div class="cl-hand-page">
+    <div class="cl-hand-page-vignette"></div>
+    <div id="particles-container"></div>
+    <div id="cl-hand-inner"></div>
+    <div id="cl-global-name-label" class="cl-global-name-label"></div>
+  </div>
+
+  <div id="cl-status">Loading&hellip;</div>
+
+  <script src="/modules/custom-login/assets/screens/shared.js"></script>
+  <script>
+    history.replaceState(null, '', 'index.html');
+
+    /**
+     * Generates floating magic particles in the background.
+     */
+    function generateParticles() {
+      const container = document.getElementById('particles-container');
+      if (!container) return;
+      const colors = ['rgba(80,255,150,0.8)', 'rgba(40,200,120,0.8)', 'rgba(255,215,100,0.8)'];
+      
+      for (let i = 0; i < 35; i++) {
+        const p = document.createElement('div');
+        p.className = 'magic-particle';
+        
+        const size = Math.random() * 4 + 1;
+        const left = Math.random() * 100;
+        const dur = Math.random() * 10 + 8;
+        const delay = Math.random() * 15;
+        const maxOp = Math.random() * 0.5 + 0.3;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+
+        p.style.width = `${size}px`;
+        p.style.height = `${size}px`;
+        p.style.left = `${left}vw`;
+        p.style.bottom = `-${Math.random() * 20}vh`;
+        
+        p.style.setProperty('--dur', `${dur}s`);
+        p.style.setProperty('--max-op', maxOp);
+        p.style.setProperty('--glow', color);
+        p.style.animationDelay = `${delay}s`;
+
+        container.appendChild(p);
+      }
+    }
+
+    const HAND_CONFIG = {
+      cardWidth:   160,
+      spread:      40,   // degrees total fan angle
+      overlap:     55,   // % card overlap
+      verticalDip: 18,   // px arc depth
+      hoverLift:   60,   // px card rise on hover
+    };
+
+    /**
+     * Builds the fan-of-cards hand layout inside #cl-hand-inner.
+     * Uses a fixed hover-zone bbox so the card can animate without moving the hit target.
+     * @param {object[]} entries
+     * @param {boolean} showNames
+     * @param {Audio|null} hoverAudio
+     * @param {Audio|null} joinAudio
+     */
+    function buildHandLayout(entries, showNames, hoverAudio, joinAudio) {
+      const hand     = document.getElementById('cl-hand-inner');
+      const handPage = hand.closest('.cl-hand-page');
+      const n        = entries.length;
+
+      const CW      = HAND_CONFIG.cardWidth;
+      const CH      = Math.round(CW * 16 / 9);
+      const step    = CW * (1 - HAND_CONFIG.overlap / 100);
+      const totalW  = CW + (n - 1) * step;
+      const originY = CH * 2.8;
+      const handH   = CH + HAND_CONFIG.hoverLift + 20;
+
+      hand.style.width  = totalW + 'px';
+      hand.style.height = handH + 'px';
+
+      let hoveredIdx = null;
+
+      function updateAll() {
+        const s = 1.18;
+        const globalLabel = document.getElementById('cl-global-name-label');
+
+        // Atualiza o nome exibido de acordo com a carta em foco
+        if (hoveredIdx !== null && showNames) {
+          globalLabel.textContent = displayName(entries[hoveredIdx]);
+          globalLabel.classList.add('visible');
+        } else if (globalLabel) {
+          globalLabel.classList.remove('visible');
+        }
+
+        hand.querySelectorAll('.cl-hand-card-visual').forEach((visual, i) => {
+          const isHov = hoveredIdx === i;
+          const t     = n <= 1 ? 0.5 : i / (n - 1);
+          const angle = (t - 0.5) * HAND_CONFIG.spread;
+          const rad   = angle * Math.PI / 180;
+          if (isHov) {
+            // Compensate for rotation arc so the card stays near its rest position on hover.
+            const dist = originY - CH / 2;
+            const dx   = dist * Math.sin(rad);
+            const dy   = dist * (s - Math.cos(rad));
+            visual.style.transform = `translateX(${dx.toFixed(2)}px) translateY(${dy.toFixed(2)}px) rotate(0deg) scale(${s})`;
+            visual.style.filter    = 'drop-shadow(0 20px 30px rgba(0,0,0,0.9)) drop-shadow(0 0 14px rgba(160,100,255,0.45))';
+            visual.style.zIndex    = '100';
+          } else if (hoveredIdx !== null) {
+            visual.style.transform = `rotate(${angle}deg)`;
+            visual.style.filter    = 'brightness(0.52) saturate(0.45)';
+            visual.style.zIndex    = String(i);
+          } else {
+            visual.style.transform = `rotate(${angle}deg)`;
+            visual.style.filter    = 'none';
+            visual.style.zIndex    = String(i);
+          }
+        });
+      }
+
+      /**
+       * Computes the axis-aligned bounding box of a rotated card in hand coordinates.
+       * Zones are placed at this bbox so they never shift during the hover lift animation.
+       * @param {number} i
+       * @returns {{ left: number, top: number, w: number, h: number }}
+       */
+      function cardBBox(i) {
+        const t   = n <= 1 ? 0.5 : i / (n - 1);
+        const rad = (t - 0.5) * HAND_CONFIG.spread * Math.PI / 180;
+        const dip = HAND_CONFIG.verticalDip * 4 * t * (1 - t);
+        const x   = i * step;
+        const cardTopY = handH - dip - CH;
+        const ox = x + CW / 2;
+        const oy = cardTopY + originY;
+        const cos = Math.cos(rad), sin = Math.sin(rad);
+        const pts = [[x, cardTopY], [x + CW, cardTopY], [x, cardTopY + CH], [x + CW, cardTopY + CH]];
+        const rxs = pts.map(([px, py]) => ox + (px - ox) * cos - (py - oy) * sin);
+        const rys = pts.map(([px, py]) => oy + (px - ox) * sin + (py - oy) * cos);
+        return {
+          left: Math.min(...rxs), top: Math.min(...rys),
+          w: Math.max(...rxs) - Math.min(...rxs),
+          h: Math.max(...rys) - Math.min(...rys)
+        };
+      }
+
+      // Single pointermove on the viewport drives all hover state via elementsFromPoint,
+      // matching the visual stacking order of the fan (topmost zone wins).
+      handPage.addEventListener('pointermove', (e) => {
+        const topZone = document.elementsFromPoint(e.clientX, e.clientY)
+          .find(el => el.dataset.handIdx !== undefined);
+        const newIdx = topZone ? Number(topZone.dataset.handIdx) : null;
+        if (newIdx !== hoveredIdx) {
+          if (newIdx !== null) {
+            if (hoverAudio) { hoverAudio.currentTime = 0; hoverAudio.play().catch(() => {}); }
+          }
+          hoveredIdx = newIdx;
+          updateAll();
+        }
+      });
+      handPage.addEventListener('pointerleave', () => {
+        if (hoveredIdx !== null) { hoveredIdx = null; updateAll(); }
+      });
+
+      for (let i = 0; i < n; i++) {
+        const entry = entries[i];
+        const t     = n <= 1 ? 0.5 : i / (n - 1);
+        const angle = (t - 0.5) * HAND_CONFIG.spread;
+        const dip   = HAND_CONFIG.verticalDip * 4 * t * (1 - t);
+        const x     = i * step;
+        const bbox  = cardBBox(i);
+
+        const zone = document.createElement('div');
+        zone.className = 'cl-hand-hover-zone';
+        zone.dataset.handIdx = i;
+        zone.style.left   = bbox.left + 'px';
+        zone.style.top    = bbox.top  + 'px';
+        zone.style.width  = bbox.w    + 'px';
+        zone.style.height = bbox.h    + 'px';
+        zone.style.zIndex = String(i);
+        zone.addEventListener('click', () => {
+          const doLogin = async (pw) => {
+            if (joinAudio) {
+              joinAudio.currentTime = 0;
+              joinAudio.play().catch(() => {});
+              await new Promise(r => { joinAudio.addEventListener('ended', r, { once: true }); setTimeout(r, 1500); });
+            }
+            loginAs(entry.userId, pw);
+          };
+          if (entry.requirePassword) {
+            showPasswordDialog(doLogin);
+          } else {
+            doLogin('');
+          }
+        });
+
+        const visual = document.createElement('div');
+        visual.className = 'cl-hand-card-visual';
+        visual.style.left            = x + 'px';
+        visual.style.bottom          = dip + 'px';
+        visual.style.width           = CW + 'px';
+        visual.style.height          = CH + 'px';
+        visual.style.transform       = `rotate(${angle}deg)`;
+        visual.style.transformOrigin = `50% ${originY}px`;
+        visual.style.boxShadow       = '0 8px 30px rgba(0,0,0,0.7)';
+        visual.style.zIndex          = String(i);
+
+        if (entry.imageUrl) {
+          const img = document.createElement('img');
+          img.src       = toAbsolute(entry.imageUrl);
+          img.alt       = esc(displayName(entry));
+          img.draggable = false;
+          visual.appendChild(img);
+        } else {
+          const ph = document.createElement('div');
+          ph.className   = 'cl-card-placeholder';
+          ph.textContent = displayName(entry);
+          visual.appendChild(ph);
+        }
+
+        const border = document.createElement('div');
+        border.className = 'cl-hand-card-border';
+        visual.appendChild(border);
+
+        hand.appendChild(zone);
+        hand.appendChild(visual);
+      }
+    }
+
+    async function init() {
+      injectSharedStyles();
+      const statusEl = document.getElementById('cl-status');
+      const jsonPath = await resolveJsonPath();
+      if (!jsonPath) { await showNoWorldPage(); return; }
+
+      const res = await fetch(jsonPath, { cache: 'no-cache' });
+      if (res.status === 404) { await showNoWorldPage(); return; }
+      if (!res.ok) { statusEl.textContent = 'Could not load player list (' + res.status + ').'; return; }
+
+      const raw = await res.json();
+      const entries    = Array.isArray(raw) ? raw : (raw.entries    ?? []);
+      const appearance = Array.isArray(raw) ? {}  : (raw.appearance ?? {});
+      const soundCfg   = Array.isArray(raw) ? {}  : (raw.sounds     ?? {});
+
+      const hoverAudio = new Audio(toAbsolute(soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3'));
+      const joinAudio  = new Audio(toAbsolute(soundCfg.joinSound  || 'modules/custom-login/assets/sfx/join.mp3'));
+      hoverAudio.volume = 0.6;
+      joinAudio.volume  = 0.8;
+
+      if (appearance.backgroundUrl) {
+        document.body.classList.add('has-custom-bg');
+        applyBackground(appearance.backgroundUrl, { videoAudio: appearance.videoAudio });
+      }
+
+      const faviconLink = document.createElement('link');
+      faviconLink.rel = 'shortcut icon';
+      faviconLink.href = toAbsolute(appearance.faviconUrl || 'modules/custom-login/assets/screens/favicon.ico');
+      document.head.appendChild(faviconLink);
+
+      document.title = appearance.screenTitle || 'Welcome';
+
+      const valid = entries.filter(e => e.userId);
+      if (!valid.length) {
+        statusEl.textContent = 'No players configured yet. Ask your GM to set up the welcome page.';
+        return;
+      }
+
+      const showNames = (appearance.showNames ?? 'yes') !== 'no';
+      statusEl.remove();
+
+      document.body.classList.add('layout-hand-cards');
+      
+      // Injeta as partículas na tela antes de construir as cartas
+      generateParticles();
+      
+      buildHandLayout(valid, showNames, hoverAudio, joinAudio);
+    }
+
+    init();
+  </script>
+</body>
+</html>

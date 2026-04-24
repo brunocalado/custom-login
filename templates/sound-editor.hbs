@@ -1,0 +1,67 @@
+<div class="cl-editor-wrap">
+
+  <p class="cl-description">
+    Configure the audio cues played on the welcome page. Click
+    <strong>Save and Close</strong> to apply changes.
+  </p>
+
+  <section class="cl-section">
+    <h3 class="cl-section-title"><i class="fas fa-mouse-pointer"></i> Hover Sound</h3>
+    <p class="cl-hint">Played when the cursor enters a login portrait.</p>
+    <label class="cl-toggle-label">
+      <input type="checkbox"
+             class="cl-sound-toggle"
+             name="hoverSoundEnabled"
+             {{#if hoverSoundEnabled}}checked{{/if}} />
+      <span class="cl-toggle-track">
+        <span class="cl-toggle-thumb"></span>
+      </span>
+      <span class="cl-toggle-text">{{#if hoverSoundEnabled}}Enabled{{else}}Disabled{{/if}}</span>
+    </label>
+    <div class="cl-sound-row">
+      <input type="text"
+             class="cl-text-input cl-hover-sound-url"
+             name="hoverSound"
+             value="{{hoverSound}}"
+             placeholder="modules/custom-login/assets/sfx/hover.mp3" />
+      <button type="button" class="cl-btn cl-btn--ghost" data-action="pickHoverSound">
+        <i class="fas fa-folder-open"></i> Browse
+      </button>
+    </div>
+  </section>
+
+  <section class="cl-section">
+    <h3 class="cl-section-title"><i class="fas fa-sign-in-alt"></i> Join Sound</h3>
+    <p class="cl-hint">Played when a player clicks their portrait to log in.</p>
+    <label class="cl-toggle-label">
+      <input type="checkbox"
+             class="cl-sound-toggle"
+             name="joinSoundEnabled"
+             {{#if joinSoundEnabled}}checked{{/if}} />
+      <span class="cl-toggle-track">
+        <span class="cl-toggle-thumb"></span>
+      </span>
+      <span class="cl-toggle-text">{{#if joinSoundEnabled}}Enabled{{else}}Disabled{{/if}}</span>
+    </label>
+    <div class="cl-sound-row">
+      <input type="text"
+             class="cl-text-input cl-join-sound-url"
+             name="joinSound"
+             value="{{joinSound}}"
+             placeholder="modules/custom-login/assets/sfx/join.mp3" />
+      <button type="button" class="cl-btn cl-btn--ghost" data-action="pickJoinSound">
+        <i class="fas fa-folder-open"></i> Browse
+      </button>
+    </div>
+  </section>
+
+  <div class="cl-actions">
+    <div></div>
+    <div class="cl-actions-right">
+      <button type="button" class="cl-btn cl-btn--primary" data-action="saveAndGenerate">
+        <i class="fas fa-save"></i> Save and Close
+      </button>
+    </div>
+  </div>
+
+</div>

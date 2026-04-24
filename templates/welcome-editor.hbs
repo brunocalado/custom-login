@@ -1,0 +1,95 @@
+{{!-- Welcome Page Editor template --}}
+<div class="cl-editor-wrap">
+
+  {{!-- Description --}}
+  <p class="cl-description">
+    Assign a portrait image to each user, then click <strong>Save and Close</strong> to save the player configuration.
+    The <strong>Hover Sound</strong> and <strong>Join Sound</strong> buttons let you assign a custom sound per user;
+    when none is set the global sound from the Sound Editor is used.
+  </p>
+
+  {{!-- Entry list — auto-populated from all users --}}
+  <section class="cl-entries">
+    {{#each entries}}
+    <div class="cl-entry-row" data-user-id="{{userId}}">
+      <input type="hidden" class="cl-image-url"      value="{{imageUrl}}" />
+      <input type="hidden" class="cl-user-hover-sound" value="{{hoverSound}}" />
+      <input type="hidden" class="cl-user-join-sound"  value="{{joinSound}}" />
+
+      {{!-- Drag handle for reordering --}}
+      <span class="cl-drag-handle" draggable="true" aria-label="Drag to reorder">
+        <i class="fas fa-grip-vertical"></i>
+      </span>
+
+      {{!-- Small square thumbnail; hover shows larger tooltip --}}
+      <div class="cl-thumb-wrap">
+        {{#if hasImage}}
+          <img class="cl-thumb" src="{{imageUrl}}" alt="{{userName}}" />
+          <div class="cl-thumb-tooltip">
+            <img src="{{imageUrl}}" alt="{{userName}}" />
+          </div>
+        {{else}}
+          <div class="cl-thumb cl-thumb--empty">{{userName}}</div>
+        {{/if}}
+      </div>
+
+      {{!-- Username --}}
+      <span class="cl-user-name">{{userName}}</span>
+
+      {{!-- Browse image --}}
+      <button type="button" class="cl-btn cl-btn--ghost cl-browse-btn"
+              data-action="pickImage" data-user-id="{{userId}}">
+        <i class="fas fa-folder-open"></i> Browse
+      </button>
+
+      {{!-- Show Name select --}}
+      <select class="cl-show-name-select" title="Name shown below the portrait on the login screen">
+        <option value="user"  {{#if (eq showName "user")}}selected{{/if}}>Show User Name</option>
+        <option value="actor" {{#if (eq showName "actor")}}selected{{/if}}>Show Linked Actor Name</option>
+        <option value="none"  {{#if (eq showName "none")}}selected{{/if}}>None</option>
+      </select>
+
+      {{!-- Per-user Hover Sound --}}
+      <button type="button"
+              class="cl-btn cl-btn--sound {{#if hoverSound}}cl-btn--sound-active{{/if}}"
+              data-action="pickUserHoverSound"
+              data-user-id="{{userId}}"
+              title="{{#if hoverSound}}Hover Sound: {{hoverSound}} (click to change or clear){{else}}Hover Sound: using global default (click to set a custom sound){{/if}}">
+        <i class="fas fa-mouse-pointer"></i> Hover Sound
+      </button>
+
+      {{!-- Per-user Join Sound --}}
+      <button type="button"
+              class="cl-btn cl-btn--sound {{#if joinSound}}cl-btn--sound-active{{/if}}"
+              data-action="pickUserJoinSound"
+              data-user-id="{{userId}}"
+              title="{{#if joinSound}}Join Sound: {{joinSound}} (click to change or clear){{else}}Join Sound: using global default (click to set a custom sound){{/if}}">
+        <i class="fas fa-sign-in-alt"></i> Join Sound
+      </button>
+
+      {{!-- Require password toggle --}}
+      <label class="cl-pw-toggle {{#if requirePassword}}cl-pw-toggle--active{{/if}}" title="Require password to log in via the welcome screen">
+        <input type="checkbox" class="cl-require-password" {{#if requirePassword}}checked{{/if}} />
+        <i class="fas fa-lock"></i> Require Password
+      </label>
+
+      {{!-- Show on login screen toggle --}}
+      <label class="cl-show-toggle {{#unless showOnScreen}}cl-show-toggle--inactive{{/unless}}" title="Show this user on the login screen">
+        <input type="checkbox" class="cl-show-on-screen" {{#if showOnScreen}}checked{{/if}} />
+        <i class="fas fa-eye"></i> Show on Screen
+      </label>
+    </div>
+    {{/each}}
+  </section>
+
+  {{!-- Actions row --}}
+  <div class="cl-actions">
+    <div></div>
+    <div class="cl-actions-right">
+      <button type="button" class="cl-btn cl-btn--primary" data-action="generatePage">
+        <i class="fas fa-save"></i> Save and Close
+      </button>
+    </div>
+  </div>
+
+</div>

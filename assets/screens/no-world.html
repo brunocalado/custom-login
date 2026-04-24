@@ -1,0 +1,73 @@
+<!-- Fragment injected into index.html — no <html>/<head>/<body> tags -->
+<style>
+  #cl-no-world-page {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 60%, #0d0820 0%, #050508 100%);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #e8e8e8;
+    text-align: center;
+    padding: 2rem;
+    gap: 1.25rem;
+  }
+
+  #cl-no-world-page .nw-icon {
+    font-size: 3.5rem;
+    line-height: 1;
+    opacity: 0.45;
+    animation: nwPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes nwPulse {
+    0%, 100% { opacity: 0.35; transform: scale(1); }
+    50%       { opacity: 0.6;  transform: scale(1.06); }
+  }
+
+  #cl-no-world-page h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.4rem, 3vw, 2.2rem);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: #c8b8f0;
+    margin: 0;
+  }
+
+  #cl-no-world-page p {
+    font-size: clamp(0.85rem, 1.5vw, 1rem);
+    color: rgba(255, 255, 255, 0.5);
+    max-width: 36ch;
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  #cl-no-world-page .nw-retry {
+    margin-top: 0.5rem;
+    padding: 0.55rem 1.6rem;
+    background: rgba(140, 100, 255, 0.18);
+    border: 1px solid rgba(180, 140, 255, 0.3);
+    border-radius: 0.5rem;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.9rem;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    cursor: pointer;
+    transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+  }
+
+  #cl-no-world-page .nw-retry:hover {
+    background: rgba(160, 120, 255, 0.32);
+    border-color: rgba(200, 170, 255, 0.55);
+    color: #fff;
+  }
+</style>
+
+<div id="cl-no-world-page">
+  <div class="nw-icon">⚔️</div>
+  <h1>No World is Active</h1>
+  <p>The GM hasn't started a world yet, or the welcome page hasn't been configured. Check back soon.</p>
+  <button class="nw-retry" onclick="location.reload()">Try Again</button>
+</div>

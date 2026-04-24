@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome</title>
+  <style>
+    html, body { margin: 0; padding: 0; background: #0d0d0d; }
+  </style>
+</head>
+<body>
+  <script>
+    const TEMPLATE_MAP = {
+      'carousel':      'welcome-carousel.html',
+      'grid':          'welcome-grid.html',
+      'row':           'welcome-row.html',
+      'hand-cards':    'welcome-hand-cards.html',
+      'solar-system':  'welcome-solar-system.html',
+      'sidebar':       'welcome-sidebar.html',
+      'sleek-phantom': 'welcome-sleek-phantom.html',
+    };
+
+    async function resolveJsonPath() {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 2000);
+      try {
+        const res = await fetch('/api/status', { cache: 'no-cache', signal: controller.signal });
+        if (res.ok) {
+          const status = await res.json();
+          const worldId = status?.world;
+          if (worldId) return '/modules/custom-login/storage/welcome-' + worldId + '.json';
+        }
+      } catch (e) {
+        console.warn('custom-login | Could not read /api/status:', e);
+      } finally {
+        clearTimeout(timer);
+      }
+      return null;
+    }
+
+    async function init() {
+      const jsonPath = await resolveJsonPath();
+      if (!jsonPath) {
+        window.location.replace('welcome-carousel.html');
+        return;
+      }
+
+      try {
+        const res = await fetch(jsonPath, { cache: 'no-cache' });
+        if (!res.ok) {
+          window.location.replace('welcome-carousel.html');
+          return;
+        }
+        const raw = await res.json();
+        const tpl = raw.appearance?.template ?? 'carousel';
+        const file = TEMPLATE_MAP[tpl] ?? 'welcome-carousel.html';
+        window.location.replace(file);
+      } catch (e) {
+        window.location.replace('welcome-carousel.html');
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #0a0505; /* Tom carvão/rubi muito escuro */
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #e8e8e8;
+    }
+
+    body.layout-grid { overflow-x: hidden; }
+
+    /* --- FUNDO ATMOSFÉRICO E ANIMADO --- */
+    .cl-bg-layer {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(80, 20, 25, 0.3) 0%, transparent 60%),
+        radial-gradient(circle at 10% 80%, rgba(120, 60, 20, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 90% 90%, rgba(40, 10, 15, 0.4) 0%, transparent 60%);
+      overflow: hidden;
+    }
+
+    /* Ocultar se o GM definir um fundo customizado */
+    body.has-custom-bg .cl-bg-layer {
+      display: none !important;
+    }
+
+    /* Padrão animado (Malha de Losangos) */
+    .cl-animated-pattern {
+      position: absolute; inset: -50%;
+      background-image: url("data:image/svg+xml,%3Csvg width='80' height='140' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 0 L80 70 L40 140 L0 70 Z' fill='none' stroke='%23d4af37' stroke-width='1.5' stroke-opacity='0.25'/%3E%3C/svg%3E");
+      background-size: 80px 140px;
+      filter: drop-shadow(0 0 3px rgba(212, 175, 55, 0.4));
+      animation: panGrid 30s linear infinite;
+    }
+
+    @keyframes panGrid {
+      0% { transform: translateY(0) translateX(0); }
+      100% { transform: translateY(140px) translateX(80px); }
+    }
+
+    /* Brilhos flutuantes (Cinzas) */
+    .ember {
+      position: absolute; border-radius: 50%;
+      background: #ffaa55;
+      box-shadow: 0 0 10px 2px #ff4400;
+      opacity: 0; pointer-events: none;
+      animation: floatEmber var(--dur) infinite ease-in;
+    }
+    @keyframes floatEmber {
+      0% { transform: translateY(10vh) scale(0); opacity: 0; }
+      20% { opacity: var(--max-op); transform: translateY(-10vh) scale(1); }
+      80% { opacity: var(--max-op); transform: translateY(-70vh) scale(1.2); }
+      100% { transform: translateY(-100vh) scale(0); opacity: 0; }
+    }
+
+    /* --- LAYOUT DA GRADE --- */
+    .cl-grid-page {
+      position: relative; z-index: 10;
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      overflow-y: auto; /* Permite rolar se houverem muitos jogadores */
+      padding: 4rem 2rem 8rem; /* padding-bottom maior para não cobrir a última linha com o nome global */
+    }
+
+    .cl-grid-wrap {
+      display: none; /* Só mostra quando carrega layout-grid */
+      grid-template-columns: repeat(auto-fit, minmax(200px, 260px));
+      gap: 2.5rem;
+      justify-content: center;
+      align-content: center;
+      width: 100%; max-width: 1400px;
+    }
+    body.layout-grid .cl-grid-wrap { display: grid; }
+
+    /* --- CARTAS 3D (RIGOROSAMENTE 1:1) --- */
+    .cl-card-3d-wrap {
+      perspective: 1200px;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .cl-card-inner {
+      width: 100%;
+      aspect-ratio: 1 / 1; /* Força a imagem a ser 1x1 */
+      position: relative;
+      border-radius: 12px;
+      transform-style: preserve-3d;
+      transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
+      background: #111;
+      overflow: hidden;
+    }
+
+    /* Moldura Metálica (Borda Dourada/Bronze) */
+    .cl-card-inner::after {
+      content: ''; position: absolute; inset: 0;
+      border-radius: 12px; z-index: 5;
+      box-shadow: inset 0 0 0 2px rgba(212, 175, 55, 0.3), inset 0 0 20px rgba(0,0,0,0.8);
+      pointer-events: none;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .cl-card-inner img, .cl-card-placeholder {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+      user-select: none; pointer-events: none;
+    }
+
+    .cl-card-placeholder {
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cinzel', serif; font-size: 1.2rem;
+      background: #1a1515; color: rgba(255,255,255,0.4);
+    }
+
+    /* Camada de reflexo (Glare) calculada via JS */
+    .cl-card-glare {
+      position: absolute; inset: 0;
+      border-radius: 12px;
+      background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.2) 0%, transparent 60%);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+      mix-blend-mode: overlay;
+      z-index: 6;
+    }
+
+    /* Novo rótulo global posicionado na parte inferior central */
+    .cl-global-name-label {
+      position: fixed;
+      bottom: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.8rem, 3.5vw, 3.2rem);
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.95);
+      text-transform: uppercase;
+      text-align: center;
+      letter-spacing: 0.12em;
+      text-shadow: 0 4px 15px rgba(0, 0, 0, 0.9), 0 0 25px rgba(212, 175, 55, 0.6);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      white-space: nowrap;
+    }
+    .cl-global-name-label.visible {
+      opacity: 1;
+      transform: translate(-50%, -10px);
+    }
+
+    /* Efeitos de Hover (Mouse em cima) */
+    .cl-card-3d-wrap:hover .cl-card-inner {
+      box-shadow: 0 25px 50px rgba(0,0,0,0.9), 0 0 30px rgba(212, 175, 55, 0.4);
+      z-index: 20;
+    }
+    .cl-card-3d-wrap:hover .cl-card-inner::after {
+      box-shadow: inset 0 0 0 2px rgba(212, 175, 55, 0.8), inset 0 0 10px rgba(212, 175, 55, 0.3);
+    }
+    .cl-card-3d-wrap:hover .cl-card-glare { opacity: 1; }
+
+    #cl-status {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-family: sans-serif; font-size: 1.2rem; color: #aaa; pointer-events: none;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="cl-bg-layer" id="cl-bg-layer">
+    <div class="cl-animated-pattern"></div>
+  </div>
+
+  <main class="cl-grid-page">
+    <div class="cl-grid-wrap" id="cl-grid-wrap"></div>
+  </main>
+  
+  <!-- Elemento para exibir o nome do jogador -->
+  <div id="cl-global-name-label" class="cl-global-name-label"></div>
+  
+  <div id="cl-status">Loading&hellip;</div>
+
+  <script src="/modules/custom-login/assets/screens/shared.js"></script>
+  <script>
+    try {
+      history.replaceState(null, '', 'index.html');
+    } catch (e) {
+      console.warn('O replaceState foi bloqueado. Ignorando.', e);
+    }
+
+    /**
+     * Gera as partículas flutuantes (brasas)
+     */
+    function createEmbers() {
+      const container = document.getElementById('cl-bg-layer');
+      if (!container) return;
+      
+      for (let i = 0; i < 40; i++) {
+        const ember = document.createElement('div');
+        ember.className = 'ember';
+        
+        const size = Math.random() * 3 + 1;
+        const left = Math.random() * 100;
+        const dur = Math.random() * 8 + 5;
+        const delay = Math.random() * 10;
+        const maxOp = Math.random() * 0.6 + 0.2;
+
+        ember.style.width = `${size}px`;
+        ember.style.height = `${size}px`;
+        ember.style.left = `${left}vw`;
+        ember.style.bottom = `-${Math.random() * 20}vh`;
+        
+        ember.style.setProperty('--dur', `${dur}s`);
+        ember.style.setProperty('--max-op', maxOp);
+        ember.style.animationDelay = `${delay}s`;
+
+        container.appendChild(ember);
+      }
+    }
+
+    /**
+     * Constrói a carta com efeito 3D da Galeria
+     */
+    function build3DGridCard(entry, showNames, hoverAudio, joinAudio) {
+      const wrap = document.createElement('div');
+      wrap.className = 'cl-card-3d-wrap';
+      wrap.setAttribute('role', 'button');
+
+      const inner = document.createElement('div');
+      inner.className = 'cl-card-inner';
+
+      // Reflexo Dinâmico
+      const glare = document.createElement('div');
+      glare.className = 'cl-card-glare';
+
+      if (entry.imageUrl) {
+        const img = document.createElement('img');
+        img.src = toAbsolute(entry.imageUrl);
+        img.alt = esc(displayName(entry));
+        img.draggable = false;
+        inner.appendChild(img);
+      } else {
+        const ph = document.createElement('div');
+        ph.className = 'cl-card-placeholder';
+        ph.textContent = displayName(entry);
+        inner.appendChild(ph);
+      }
+
+      inner.appendChild(glare);
+      wrap.appendChild(inner);
+
+      // Física de Inclinação 3D no Hover
+      wrap.addEventListener('mousemove', (e) => {
+        const rect = inner.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        // Inclinação máxima
+        const rotateX = ((y - centerY) / centerY) * -10; 
+        const rotateY = ((x - centerX) / centerX) * 10;
+        
+        inner.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
+        
+        // Brilho acompanha o ponteiro
+        glare.style.setProperty('--mx', `${(x / rect.width) * 100}%`);
+        glare.style.setProperty('--my', `${(y / rect.height) * 100}%`);
+      });
+
+      wrap.addEventListener('mouseenter', () => {
+        if (showNames) {
+          const globalLabel = document.getElementById('cl-global-name-label');
+          if (globalLabel) {
+            globalLabel.textContent = displayName(entry);
+            globalLabel.classList.add('visible');
+          }
+        }
+        if (hoverAudio) {
+          hoverAudio.currentTime = 0;
+          hoverAudio.play().catch(() => {});
+        }
+      });
+
+      wrap.addEventListener('mouseleave', () => {
+        inner.style.transform = `rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+        if (showNames) {
+          const globalLabel = document.getElementById('cl-global-name-label');
+          if (globalLabel) {
+            globalLabel.classList.remove('visible');
+          }
+        }
+      });
+
+      wrap.addEventListener('click', () => { 
+        const doLogin = async (pw) => {
+          if (joinAudio) {
+            joinAudio.currentTime = 0;
+            joinAudio.play().catch(() => {});
+            await new Promise(r => { joinAudio.addEventListener('ended', r, { once: true }); setTimeout(r, 1500); });
+          }
+          loginAs(entry.userId, pw);
+        };
+        if (entry.requirePassword) {
+          showPasswordDialog(doLogin);
+        } else {
+          doLogin('');
+        }
+      });
+
+      return wrap;
+    }
+
+    async function init() {
+      injectSharedStyles();
+      const statusEl = document.getElementById('cl-status');
+      const jsonPath = await resolveJsonPath();
+      if (!jsonPath) { await showNoWorldPage(); return; }
+
+      const res = await fetch(jsonPath, { cache: 'no-cache' });
+      if (res.status === 404) { await showNoWorldPage(); return; }
+      if (!res.ok) { statusEl.textContent = 'Could not load player list (' + res.status + ').'; return; }
+
+      const raw = await res.json();
+      const entries    = Array.isArray(raw) ? raw : (raw.entries    ?? []);
+      const appearance = Array.isArray(raw) ? {}  : (raw.appearance ?? {});
+      const soundCfg   = Array.isArray(raw) ? {}  : (raw.sounds     ?? {});
+
+      const hoverAudio = new Audio(toAbsolute(soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3'));
+      const joinAudio  = new Audio(toAbsolute(soundCfg.joinSound  || 'modules/custom-login/assets/sfx/join.mp3'));
+      hoverAudio.volume = 0.6;
+      joinAudio.volume  = 0.8;
+
+      if (appearance.backgroundUrl) {
+        document.body.classList.add('has-custom-bg');
+        applyBackground(appearance.backgroundUrl, { videoAudio: appearance.videoAudio });
+      }
+
+      const faviconLink = document.createElement('link');
+      faviconLink.rel = 'shortcut icon';
+      faviconLink.href = toAbsolute(appearance.faviconUrl || 'modules/custom-login/assets/screens/favicon.ico');
+      document.head.appendChild(faviconLink);
+
+      document.title = appearance.screenTitle || 'Welcome';
+
+      const valid = entries.filter(e => e.userId);
+      if (!valid.length) {
+        statusEl.textContent = 'No players configured yet. Ask your GM to set up the welcome page.';
+        return;
+      }
+
+      const showNames = (appearance.showNames ?? 'yes') !== 'no';
+      statusEl.remove();
+
+      document.body.classList.add('layout-grid');
+      
+      // Gera as partículas decorativas do fundo (ocultas se usar bg customizado)
+      createEmbers();
+
+      const gridWrap = document.getElementById('cl-grid-wrap');
+      
+      // Adapta o tamanho da grade dependendo da quantidade de jogadores para garantir bom preenchimento
+      if (valid.length > 8) {
+        gridWrap.style.gridTemplateColumns = "repeat(auto-fit, minmax(140px, 180px))";
+      } else if (valid.length > 4) {
+        gridWrap.style.gridTemplateColumns = "repeat(auto-fit, minmax(180px, 220px))";
+      }
+
+      for (const entry of valid) {
+        gridWrap.appendChild(build3DGridCard(entry, showNames, hoverAudio, joinAudio));
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

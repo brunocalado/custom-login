@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #040812; /* Azul Abissal muito escuro */
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #e8e8e8;
+    }
+
+    body.layout-row {
+      display: flex; align-items: center; justify-content: center;
+      height: 100vh;
+    }
+
+    /* --- FUNDO ATMOSFÉRICO E ANIMADO --- */
+    .cl-bg-layer {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse at 50% 100%, rgba(0, 160, 255, 0.15) 0%, transparent 60%),
+        radial-gradient(ellipse at 20% 0%, rgba(30, 40, 120, 0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(80, 20, 140, 0.15) 0%, transparent 50%);
+      overflow: hidden;
+    }
+
+    /* Ocultar se o GM definir um fundo customizado */
+    body.has-custom-bg .cl-bg-layer {
+      display: none !important;
+    }
+
+    /* Padrão animado (Linhas Verticais) */
+    .cl-animated-pattern {
+      position: absolute; inset: -50%;
+      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 0 L50 100' fill='none' stroke='%2300e5ff' stroke-width='1.5' stroke-opacity='0.08'/%3E%3C/svg%3E");
+      background-size: 100px 100px;
+      animation: panLines 20s linear infinite;
+    }
+
+    @keyframes panLines {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(100px); }
+    }
+
+    /* Partículas (Pontos de luz Ciano/Prata) */
+    .magic-mote {
+      position: absolute; border-radius: 50%;
+      background: #e0faff;
+      box-shadow: 0 0 12px 2px #00e5ff;
+      opacity: 0; pointer-events: none;
+      animation: floatMote var(--dur) infinite ease-in;
+    }
+    @keyframes floatMote {
+      0% { transform: translateY(10vh) scale(0); opacity: 0; }
+      20% { opacity: var(--max-op); transform: translateY(-10vh) scale(1); }
+      80% { opacity: var(--max-op); transform: translateY(-70vh) scale(1.2); }
+      100% { transform: translateY(-100vh) scale(0); opacity: 0; }
+    }
+
+    /* --- LAYOUT DA LINHA (ROW) --- */
+    .cl-row-layout {
+      display: none;
+      align-items: stretch;
+      gap: 6px;
+      height: var(--card-h, 80vh);
+      position: relative; z-index: 2;
+      /* Move a linha um pouco para cima para dar espaço ao nome */
+      transform: translateY(-2vh);
+    }
+    body.layout-row .cl-row-layout { display: flex; }
+
+    /* --- CARTAS --- */
+    .cl-row-layout .cl-card {
+      position: relative;
+      width: var(--card-w, 200px);
+      flex-shrink: 0; overflow: hidden; cursor: pointer;
+      border-radius: 6px;
+      background: #111;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition:
+        transform 300ms cubic-bezier(0.16,1,0.3,1),
+        filter 300ms ease,
+        box-shadow 300ms ease,
+        border-color 300ms ease;
+    }
+    
+    .cl-row-layout .cl-card img, .cl-card-placeholder {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: top center;
+      display: block; pointer-events: none; user-select: none;
+    }
+    
+    .cl-card-placeholder {
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cinzel', serif; font-size: clamp(0.8rem, 1.5vw, 1.1rem);
+      background: #1a1b26; color: rgba(255,255,255,0.4); text-align: center; padding: 1rem;
+    }
+
+    /* Efeito de Vidro/Borda Interna */
+    .cl-row-layout .cl-card::after {
+      content: ''; position: absolute; inset: 0;
+      border-radius: 6px; pointer-events: none;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+      transition: box-shadow 300ms ease;
+    }
+
+    /* Efeito ao focar nas cartas: As outras escurecem levemente, a focada brilha e salta */
+    .cl-row-layout:has(.cl-card:hover) .cl-card:not(:hover) {
+      filter: brightness(0.5) saturate(0.7);
+    }
+    
+    .cl-row-layout .cl-card:hover {
+      filter: brightness(1.1) saturate(1.1);
+      transform: scaleY(1.05) scaleX(1.03);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.8), 0 0 25px rgba(0, 229, 255, 0.4);
+      border-color: rgba(0, 229, 255, 0.8);
+      z-index: 10;
+    }
+    .cl-row-layout .cl-card:hover::after {
+      box-shadow: inset 0 0 0 2px rgba(0, 229, 255, 0.6), inset 0 0 20px rgba(0, 229, 255, 0.2);
+    }
+    
+    .cl-row-layout .cl-card:active { transform: scaleY(1.02) scaleX(1.0); }
+
+    /* Novo rótulo global posicionado na parte inferior central */
+    .cl-global-name-label {
+      position: fixed;
+      bottom: 6%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.8rem, 3.5vw, 3.2rem);
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.95);
+      text-transform: uppercase;
+      text-align: center;
+      letter-spacing: 0.12em;
+      text-shadow: 0 4px 15px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 229, 255, 0.6);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      white-space: nowrap;
+    }
+    .cl-global-name-label.visible {
+      opacity: 1;
+      transform: translate(-50%, -10px);
+    }
+
+    #cl-status {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-family: sans-serif; font-size: 1.2rem; color: #aaa; pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="cl-bg-layer" id="cl-bg-layer">
+    <div class="cl-animated-pattern"></div>
+  </div>
+
+  <div class="cl-row-layout" id="cl-row-layout"></div>
+
+  <!-- Elemento para exibir o nome do jogador -->
+  <div id="cl-global-name-label" class="cl-global-name-label"></div>
+
+  <div id="cl-status">Loading&hellip;</div>
+
+  <script src="/modules/custom-login/assets/screens/shared.js"></script>
+  <script>
+    try {
+      history.replaceState(null, '', 'index.html');
+    } catch (e) {
+      console.warn('O replaceState foi bloqueado. Ignorando.', e);
+    }
+
+    /**
+     * Gera as partículas flutuantes (Motes mágicos)
+     */
+    function createMotes() {
+      const container = document.getElementById('cl-bg-layer');
+      if (!container) return;
+      
+      for (let i = 0; i < 35; i++) {
+        const mote = document.createElement('div');
+        mote.className = 'magic-mote';
+        
+        const size = Math.random() * 3 + 1;
+        const left = Math.random() * 100;
+        const dur = Math.random() * 10 + 6;
+        const delay = Math.random() * 10;
+        const maxOp = Math.random() * 0.5 + 0.2;
+
+        mote.style.width = `${size}px`;
+        mote.style.height = `${size}px`;
+        mote.style.left = `${left}vw`;
+        mote.style.bottom = `-${Math.random() * 20}vh`;
+        
+        mote.style.setProperty('--dur', `${dur}s`);
+        mote.style.setProperty('--max-op', maxOp);
+        mote.style.animationDelay = `${delay}s`;
+
+        container.appendChild(mote);
+      }
+    }
+
+    /**
+     * Builds a single row card element.
+     * @param {object} entry
+     * @param {boolean} showNames
+     * @param {Audio} hoverAudio
+     * @param {Audio} joinAudio
+     * @returns {HTMLElement}
+     */
+    function buildRowCard(entry, showNames, hoverAudio, joinAudio) {
+      const card = document.createElement('div');
+      card.className = 'cl-card';
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-label', 'Login as ' + esc(displayName(entry)));
+
+      card.addEventListener('mouseenter', () => {
+        if (showNames) {
+          const globalLabel = document.getElementById('cl-global-name-label');
+          if (globalLabel) {
+            globalLabel.textContent = displayName(entry);
+            globalLabel.classList.add('visible');
+          }
+        }
+        if (hoverAudio) {
+          hoverAudio.currentTime = 0; 
+          hoverAudio.play().catch(() => {});
+        }
+      });
+      
+      card.addEventListener('mouseleave', () => {
+        if (showNames) {
+          const globalLabel = document.getElementById('cl-global-name-label');
+          if (globalLabel) {
+            globalLabel.classList.remove('visible');
+          }
+        }
+      });
+      
+      card.addEventListener('click', async () => {
+        const doLogin = async (pw) => {
+          if (joinAudio) {
+            joinAudio.currentTime = 0;
+            joinAudio.play().catch(() => {});
+            await new Promise(r => { joinAudio.addEventListener('ended', r, { once: true }); setTimeout(r, 1500); });
+          }
+          loginAs(entry.userId, pw);
+        };
+        if (entry.requirePassword) {
+          showPasswordDialog(doLogin);
+        } else {
+          doLogin('');
+        }
+      });
+
+      if (entry.imageUrl) {
+        const img = document.createElement('img');
+        img.src = toAbsolute(entry.imageUrl);
+        img.alt = esc(displayName(entry));
+        img.draggable = false;
+        card.appendChild(img);
+      } else {
+        const ph = document.createElement('div');
+        ph.className = 'cl-card-placeholder';
+        ph.textContent = displayName(entry);
+        card.appendChild(ph);
+      }
+
+      return card;
+    }
+
+    async function init() {
+      injectSharedStyles();
+      const statusEl = document.getElementById('cl-status');
+      const jsonPath = await resolveJsonPath();
+      if (!jsonPath) { await showNoWorldPage(); return; }
+
+      const res = await fetch(jsonPath, { cache: 'no-cache' });
+      if (res.status === 404) { await showNoWorldPage(); return; }
+      if (!res.ok) { statusEl.textContent = 'Could not load player list (' + res.status + ').'; return; }
+
+      const raw = await res.json();
+      const entries    = Array.isArray(raw) ? raw : (raw.entries    ?? []);
+      const appearance = Array.isArray(raw) ? {}  : (raw.appearance ?? {});
+      const soundCfg   = Array.isArray(raw) ? {}  : (raw.sounds     ?? {});
+
+      const hoverAudio = new Audio(toAbsolute(soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3'));
+      const joinAudio  = new Audio(toAbsolute(soundCfg.joinSound  || 'modules/custom-login/assets/sfx/join.mp3'));
+      hoverAudio.volume = 0.6;
+      joinAudio.volume  = 0.8;
+
+      if (appearance.backgroundUrl) {
+        document.body.classList.add('has-custom-bg');
+        applyBackground(appearance.backgroundUrl, { videoAudio: appearance.videoAudio });
+      }
+
+      const faviconLink = document.createElement('link');
+      faviconLink.rel = 'shortcut icon';
+      faviconLink.href = toAbsolute(appearance.faviconUrl || 'modules/custom-login/assets/screens/favicon.ico');
+      document.head.appendChild(faviconLink);
+
+      document.title = appearance.screenTitle || 'Welcome';
+
+      const valid = entries.filter(e => e.userId);
+      if (!valid.length) {
+        statusEl.textContent = 'No players configured yet. Ask your GM to set up the welcome page.';
+        return;
+      }
+
+      const showNames = (appearance.showNames ?? 'yes') !== 'no';
+      statusEl.remove();
+
+      document.body.classList.add('layout-row');
+      
+      // Gera as partículas decorativas (ficarão ocultas se houver background customizado)
+      createMotes();
+
+      const row  = document.getElementById('cl-row-layout');
+      const n    = valid.length;
+      
+      // Ajuste de altura máxima para garantir que o nome global embaixo sempre tenha espaço
+      const maxCardH = window.innerHeight * 0.80; 
+      const maxCardW = maxCardH * 9 / 16;
+      const availW   = window.innerWidth * 0.98;
+      
+      let cardH, cardW;
+      if (n * maxCardW <= availW) {
+        cardH = maxCardH; cardW = maxCardW;
+      } else {
+        cardW = availW / n;
+        cardH = cardW * 16 / 9;
+      }
+      row.style.setProperty('--card-h', cardH + 'px');
+      row.style.setProperty('--card-w', cardW + 'px');
+
+      for (const entry of valid) {
+        row.appendChild(buildRowCard(entry, showNames, hoverAudio, joinAudio));
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
