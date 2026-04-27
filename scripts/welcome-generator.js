@@ -56,10 +56,14 @@ export async function generateWelcomePage(entries) {
   const showNameMap = Object.fromEntries(validEntries.map(e => [e.userId, e.showName   ?? "user"]));
 
   const processedIds = new Set();
+  const disabledIds  = new Set();
   const resolvedEntries = [];
 
   for (const e of validEntries) {
-    if (enabledMap[e.userId] === false) continue;
+    if (enabledMap[e.userId] === false) {
+      disabledIds.add(e.userId);
+      continue;
+    }
     const u = game.users.get(e.userId);
     if (!u) continue;
     resolvedEntries.push({
@@ -75,6 +79,7 @@ export async function generateWelcomePage(entries) {
 
   for (const u of game.users.contents) {
     if (processedIds.has(u.id)) continue;
+    if (disabledIds.has(u.id))  continue;
     resolvedEntries.push({
       imageUrl:        "",
       userId:          u.id,
