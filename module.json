@@ -1,7 +1,7 @@
 {
   "id": "custom-login",
   "title": "Custom Login",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "compatibility": {
     "minimum": "13",
     "verified": "14"

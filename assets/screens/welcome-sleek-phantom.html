@@ -384,7 +384,7 @@
      * @param {Audio|null} hoverAudio
      * @param {Audio|null} joinAudio
      */
-    function buildSleekPhantomLayout(valid, showNames, hoverAudio, joinAudio) {
+    function buildSleekPhantomLayout(valid, showNames, soundCfg) {
       const els = {
         rosterList: document.getElementById('sp-roster-list'),
         flash:      document.getElementById('sp-flash'),
@@ -467,17 +467,25 @@
           btn.textContent = displayName(entry);
 
           btn.addEventListener('mouseenter', function() {
-            if (hoverAudio) { hoverAudio.currentTime = 0; hoverAudio.play().catch(function() {}); }
+            // Resolve per-entry hover sound
+            var hoverSrc = entry.hoverSound || soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3';
+            if (soundCfg.hoverSoundEnabled !== false) {
+              var ha = new Audio(toAbsolute(hoverSrc));
+              ha.volume = 0.6;
+              ha.play().catch(function() {});
+            }
             spSelectCharacter(idx);
           });
           btn.addEventListener('click', function() {
+            // Resolve per-entry join sound
+            var joinSrc = entry.joinSound || soundCfg.joinSound || 'modules/custom-login/assets/sfx/join.mp3';
             if (entry.requirePassword) {
               showPasswordDialog(function(pw) {
-                if (joinAudio) { joinAudio.currentTime = 0; joinAudio.play().catch(function() {}); }
+                if (soundCfg.joinSoundEnabled !== false) { var ja = new Audio(toAbsolute(joinSrc)); ja.volume = 0.8; ja.play().catch(function() {}); }
                 loginAs(entry.userId, pw);
               });
             } else {
-              if (joinAudio) { joinAudio.currentTime = 0; joinAudio.play().catch(function() {}); }
+              if (soundCfg.joinSoundEnabled !== false) { var ja = new Audio(toAbsolute(joinSrc)); ja.volume = 0.8; ja.play().catch(function() {}); }
               loginAs(entry.userId);
             }
           });
@@ -507,11 +515,6 @@
       var appearance = Array.isArray(raw) ? {}  : (raw.appearance ?? {});
       var soundCfg   = Array.isArray(raw) ? {}  : (raw.sounds     ?? {});
 
-      var hoverAudio = new Audio(toAbsolute(soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3'));
-      var joinAudio  = new Audio(toAbsolute(soundCfg.joinSound  || 'modules/custom-login/assets/sfx/join.mp3'));
-      hoverAudio.volume = 0.6;
-      joinAudio.volume  = 0.8;
-
       // Apply custom background if set — and hide the animated lines
       if (appearance.backgroundUrl) {
         applyBackground(appearance.backgroundUrl, { videoAudio: appearance.videoAudio });
@@ -537,7 +540,7 @@
       statusEl.remove();
 
       document.body.classList.add('layout-sleek-phantom');
-      buildSleekPhantomLayout(valid, showNames, hoverAudio, joinAudio);
+      buildSleekPhantomLayout(valid, showNames, soundCfg);
     }
 
     init();

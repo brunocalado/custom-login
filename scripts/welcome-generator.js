@@ -72,7 +72,9 @@ export async function generateWelcomePage(entries) {
       userName:        u.name,
       characterName:   u.character?.name    ?? "",
       requirePassword: pwMap[e.userId]       ?? false,
-      showName:        showNameMap[e.userId] ?? "user"
+      showName:        showNameMap[e.userId] ?? "user",
+      hoverSound:      e.hoverSound          ?? "",
+      joinSound:       e.joinSound           ?? ""
     });
     processedIds.add(e.userId);
   }
@@ -86,7 +88,9 @@ export async function generateWelcomePage(entries) {
       userName:        u.name,
       characterName:   u.character?.name ?? "",
       requirePassword: false,
-      showName:        "user"
+      showName:        "user",
+      hoverSound:      "",
+      joinSound:       ""
     });
   }
 

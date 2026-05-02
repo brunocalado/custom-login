@@ -200,7 +200,7 @@
     /**
      * Constrói o sistema solar plano 2D Original
      */
-    function buildSystem(entries, showNames, hoverAudio, joinAudio) {
+    function buildSystem(entries, showNames, soundCfg) {
       const system = document.getElementById('solar-system');
       system.innerHTML = '';
       
@@ -251,9 +251,12 @@
               globalLabel.classList.add('visible');
             }
           }
-          if (hoverAudio) {
-            hoverAudio.currentTime = 0;
-            hoverAudio.play().catch(() => {});
+          // Resolve per-entry hover sound
+          const hoverSrc = entry.hoverSound || soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3';
+          if (soundCfg.hoverSoundEnabled !== false) {
+            const ha = new Audio(toAbsolute(hoverSrc));
+            ha.volume = 0.6;
+            ha.play().catch(() => {});
           }
         });
 
@@ -268,10 +271,13 @@
 
         p.addEventListener('click', () => {
           const doLogin = async (pw) => {
-            if (joinAudio) {
-              joinAudio.currentTime = 0;
-              joinAudio.play().catch(() => {});
-              await new Promise(res => { joinAudio.addEventListener('ended', res, { once: true }); setTimeout(res, 1500); });
+            // Resolve per-entry join sound
+            const joinSrc = entry.joinSound || soundCfg.joinSound || 'modules/custom-login/assets/sfx/join.mp3';
+            if (soundCfg.joinSoundEnabled !== false) {
+              const ja = new Audio(toAbsolute(joinSrc));
+              ja.volume = 0.8;
+              ja.play().catch(() => {});
+              await new Promise(res => { ja.addEventListener('ended', res, { once: true }); setTimeout(res, 1500); });
             }
             loginAs(entry.userId, pw);
           };
@@ -310,11 +316,6 @@
       const appearance = Array.isArray(raw) ? {}  : (raw.appearance ?? {});
       const soundCfg   = Array.isArray(raw) ? {}  : (raw.sounds     ?? {});
 
-      const hoverAudio = new Audio(toAbsolute(soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3'));
-      const joinAudio  = new Audio(toAbsolute(soundCfg.joinSound  || 'modules/custom-login/assets/sfx/join.mp3'));
-      hoverAudio.volume = 0.6;
-      joinAudio.volume  = 0.8;
-
       if (appearance.backgroundUrl) {
         document.body.classList.add('has-custom-bg');
         applyBackground(appearance.backgroundUrl, { videoAudio: appearance.videoAudio });
@@ -339,7 +340,7 @@
       document.body.classList.add('layout-solar-system');
       
       drawStars();
-      buildSystem(valid, showNames, hoverAudio, joinAudio);
+      buildSystem(valid, showNames, soundCfg);
     }
 
     init();

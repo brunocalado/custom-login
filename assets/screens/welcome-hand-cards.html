@@ -215,7 +215,7 @@
      * @param {Audio|null} hoverAudio
      * @param {Audio|null} joinAudio
      */
-    function buildHandLayout(entries, showNames, hoverAudio, joinAudio) {
+    function buildHandLayout(entries, showNames, soundCfg) {
       const hand     = document.getElementById('cl-hand-inner');
       const handPage = hand.closest('.cl-hand-page');
       const n        = entries.length;
@@ -302,7 +302,14 @@
         const newIdx = topZone ? Number(topZone.dataset.handIdx) : null;
         if (newIdx !== hoveredIdx) {
           if (newIdx !== null) {
-            if (hoverAudio) { hoverAudio.currentTime = 0; hoverAudio.play().catch(() => {}); }
+            // Resolve per-entry hover sound at hover time
+            const hovEntry = entries[newIdx];
+            const hoverSrc = hovEntry.hoverSound || soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3';
+            if (soundCfg.hoverSoundEnabled !== false) {
+              const ha = new Audio(toAbsolute(hoverSrc));
+              ha.volume = 0.6;
+              ha.play().catch(() => {});
+            }
           }
           hoveredIdx = newIdx;
           updateAll();
@@ -330,10 +337,13 @@
         zone.style.zIndex = String(i);
         zone.addEventListener('click', () => {
           const doLogin = async (pw) => {
-            if (joinAudio) {
-              joinAudio.currentTime = 0;
-              joinAudio.play().catch(() => {});
-              await new Promise(r => { joinAudio.addEventListener('ended', r, { once: true }); setTimeout(r, 1500); });
+            // Resolve per-entry join sound at click time
+            const joinSrc = entry.joinSound || soundCfg.joinSound || 'modules/custom-login/assets/sfx/join.mp3';
+            if (soundCfg.joinSoundEnabled !== false) {
+              const ja = new Audio(toAbsolute(joinSrc));
+              ja.volume = 0.8;
+              ja.play().catch(() => {});
+              await new Promise(r => { ja.addEventListener('ended', r, { once: true }); setTimeout(r, 1500); });
             }
             loginAs(entry.userId, pw);
           };
@@ -392,11 +402,6 @@
       const appearance = Array.isArray(raw) ? {}  : (raw.appearance ?? {});
       const soundCfg   = Array.isArray(raw) ? {}  : (raw.sounds     ?? {});
 
-      const hoverAudio = new Audio(toAbsolute(soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3'));
-      const joinAudio  = new Audio(toAbsolute(soundCfg.joinSound  || 'modules/custom-login/assets/sfx/join.mp3'));
-      hoverAudio.volume = 0.6;
-      joinAudio.volume  = 0.8;
-
       if (appearance.backgroundUrl) {
         document.body.classList.add('has-custom-bg');
         applyBackground(appearance.backgroundUrl, { videoAudio: appearance.videoAudio });
@@ -423,7 +428,7 @@
       // Injeta as partículas na tela antes de construir as cartas
       generateParticles();
       
-      buildHandLayout(valid, showNames, hoverAudio, joinAudio);
+      buildHandLayout(valid, showNames, soundCfg);
     }
 
     init();

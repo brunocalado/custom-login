@@ -290,7 +290,18 @@
      * @param {Audio|null} hoverAudio
      * @param {Audio|null} joinAudio
      */
-    function buildUserButton(entry, showNames, list, hoverAudio, joinAudio) {
+    function buildUserButton(entry, showNames, list, soundCfg) {
+      // Resolve per-entry sounds, falling back to global
+      const hoverSrc = entry.hoverSound || soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3';
+      const joinSrc  = entry.joinSound  || soundCfg.joinSound  || 'modules/custom-login/assets/sfx/join.mp3';
+      const hoverAudio = (soundCfg.hoverSoundEnabled !== false)
+        ? new Audio(toAbsolute(hoverSrc))
+        : null;
+      const joinAudio  = (soundCfg.joinSoundEnabled !== false)
+        ? new Audio(toAbsolute(joinSrc))
+        : null;
+      if (hoverAudio) hoverAudio.volume = 0.6;
+      if (joinAudio)  joinAudio.volume  = 0.8;
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'cl-user-btn';
@@ -357,11 +368,6 @@
       const appearance = Array.isArray(raw) ? {}  : (raw.appearance ?? {});
       const soundCfg   = Array.isArray(raw) ? {}  : (raw.sounds     ?? {});
 
-      const hoverAudio = new Audio(toAbsolute(soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3'));
-      const joinAudio  = new Audio(toAbsolute(soundCfg.joinSound  || 'modules/custom-login/assets/sfx/join.mp3'));
-      hoverAudio.volume = 0.6;
-      joinAudio.volume  = 0.8;
-
       if (appearance.backgroundUrl) {
         document.body.classList.add('has-custom-bg');
         applyBackground(appearance.backgroundUrl, { videoAudio: appearance.videoAudio });
@@ -390,7 +396,7 @@
 
       const list = document.getElementById('cl-user-list');
       for (const entry of valid) {
-        buildUserButton(entry, showNames, list, hoverAudio, joinAudio);
+        buildUserButton(entry, showNames, list, soundCfg);
       }
     }
 

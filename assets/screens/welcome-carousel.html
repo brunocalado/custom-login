@@ -245,7 +245,18 @@
 
     let segW = 0, pos = 0, paused = false, animating = false, rafId = null;
 
-    function buildPortraitCardCarousel(entry, showNames, hoverAudio, joinAudio) {
+    function buildPortraitCardCarousel(entry, showNames, soundCfg) {
+      // Resolve per-entry sounds, falling back to global
+      const hoverSrc = entry.hoverSound || soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3';
+      const joinSrc  = entry.joinSound  || soundCfg.joinSound  || 'modules/custom-login/assets/sfx/join.mp3';
+      const hoverAudio = (soundCfg.hoverSoundEnabled !== false)
+        ? new Audio(toAbsolute(hoverSrc))
+        : null;
+      const joinAudio  = (soundCfg.joinSoundEnabled !== false)
+        ? new Audio(toAbsolute(joinSrc))
+        : null;
+      if (hoverAudio) hoverAudio.volume = 0.6;
+      if (joinAudio)  joinAudio.volume  = 0.8;
       const cardH = Math.round(CARD_WIDTH * 16 / 9);
       const wrap = document.createElement('div');
       wrap.className = 'cl-card';
@@ -315,12 +326,12 @@
       return wrap;
     }
 
-    function buildTrack(entries, trackEl, viewportEl, showNames, hoverAudio, joinAudio) {
+    function buildTrack(entries, trackEl, viewportEl, showNames, soundCfg) {
       trackEl.innerHTML = '';
       segW = entries.length * (CARD_WIDTH + CARD_GAP);
       for (let rep = 0; rep < 3; rep++) {
         for (const entry of entries) {
-          trackEl.appendChild(buildPortraitCardCarousel(entry, showNames, hoverAudio, joinAudio));
+          trackEl.appendChild(buildPortraitCardCarousel(entry, showNames, soundCfg));
         }
       }
       const cardH = Math.round(CARD_WIDTH * 16 / 9);
@@ -370,11 +381,6 @@
       const appearance = Array.isArray(raw) ? {}  : (raw.appearance ?? {});
       const soundCfg   = Array.isArray(raw) ? {}  : (raw.sounds     ?? {});
 
-      const hoverAudio = new Audio(toAbsolute(soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3'));
-      const joinAudio  = new Audio(toAbsolute(soundCfg.joinSound  || 'modules/custom-login/assets/sfx/join.mp3'));
-      hoverAudio.volume = 0.6;
-      joinAudio.volume  = 0.8;
-
       document.body.classList.add('layout-carousel');
 
       if (appearance.backgroundUrl) {
@@ -401,7 +407,7 @@
       const trackEl    = document.getElementById('cl-track');
       const viewportEl = document.getElementById('cl-viewport');
       
-      buildTrack(valid, trackEl, viewportEl, showNames, hoverAudio, joinAudio);
+      buildTrack(valid, trackEl, viewportEl, showNames, soundCfg);
       
       pos = segW;
       applyPos(trackEl);
