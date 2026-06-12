@@ -82,6 +82,14 @@ The default Foundry login page is a plain text form. This module replaces it wit
 
 [Shortening the Login URL](https://github.com/brunocalado/custom-login/wiki/Shortening-the-Login-URL)
 
+### ⚠️ Foundry VTT 14.361+ — Required Patch
+
+Foundry VTT 14.361 changed how `.html` files are served from the `Data` folder: they now display as plain text instead of rendering. **This module requires a one-time patch to Foundry's server file to work.**
+
+The patch scripts are included in the module (`patch-foundry/` folder) and take about a minute to apply. See the **[Setup Guide](docs/SetupFoundryVTT.md)** for full instructions.
+
+> The patch must be re-applied after each Foundry update.
+
 ---
 
 ## Install

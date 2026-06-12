@@ -1,0 +1,39 @@
+{{!-- Patch Warning template — shown to GMs when HTML hosting is not enabled --}}
+<div class="cl-patch-warning">
+
+  <div class="cl-patch-warning__header">
+    <i class="fas fa-triangle-exclamation cl-patch-warning__icon"></i>
+    <p class="cl-patch-warning__lead">
+      Foundry VTT is blocking this module's welcome screens from rendering.
+    </p>
+  </div>
+
+  <div class="cl-patch-warning__body">
+    <p>
+      Since version <strong>14.361</strong>, Foundry serves HTML files from the Data folder
+      as plain text instead of rendering them — a security measure that prevents
+      Custom Login's welcome screens from working.
+    </p>
+    <p>
+      This can be fixed with a <strong>one-time patch</strong> to one Foundry server file.
+      Scripts that apply the patch automatically are included in the module
+      (<code>patch-foundry/</code> folder). The process takes about a minute.
+    </p>
+    <p class="cl-patch-warning__note">
+      <i class="fas fa-rotate-right"></i>
+      The patch must be re-applied after each Foundry update.
+    </p>
+  </div>
+
+  <div class="cl-patch-warning__links">
+    <a href="https://github.com/brunocalado/custom-login/wiki/Configurando-o-Custom-Login-com-o-Foundry-VTT-14.361-"
+       target="_blank" rel="noopener noreferrer" class="cl-btn cl-btn--ghost">
+      <i class="fas fa-book"></i> Instruções em Português
+    </a>
+    <a href="https://github.com/brunocalado/custom-login/wiki/Setting-Up-Custom-Login-with-Foundry-VTT-14.361"
+       target="_blank" rel="noopener noreferrer" class="cl-btn cl-btn--ghost">
+      <i class="fas fa-book"></i> Instructions in English
+    </a>
+  </div>
+
+</div>

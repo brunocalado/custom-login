@@ -10,6 +10,7 @@ import { AppearanceEditor } from "./appearance-editor.js";
 import { SoundEditor } from "./sound-editor.js";
 import { generateWelcomePage } from "./welcome-generator.js";
 import { registerInvitationLinksHook } from "./invitation-links.js";
+import { registerPatchCheck } from "./patch-warning.js";
 
 const MODULE_ID = "custom-login";
 
@@ -110,6 +111,7 @@ Hooks.once("init", () => {
   });
 
   registerInvitationLinksHook();
+  registerPatchCheck();
 });
 
 export { generateWelcomePage };
