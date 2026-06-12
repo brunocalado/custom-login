@@ -107,8 +107,9 @@ export async function generateWelcomePage(entries) {
   const data = {
     entries: resolvedEntries,
     appearance: {
-      // || worldBg so an unset (empty-string) backgroundUrl still uses the world default.
-      backgroundUrl: appearance.backgroundUrl || worldBg,
+      // Solar system renders its own starfield; any stored backgroundUrl must be cleared
+      // so the template does not suppress the canvas animation.
+      backgroundUrl: template === "solar-system" ? "" : appearance.backgroundUrl,
       template,
       faviconUrl:  appearance.faviconUrl,
       screenTitle: appearance.screenTitle,

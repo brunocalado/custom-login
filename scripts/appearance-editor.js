@@ -55,15 +55,16 @@ export class AppearanceEditor extends foundry.applications.api.HandlebarsApplica
 
   /**
    * Builds the template context from the AppearanceSettingsModel instance.
-   * Uses `||` instead of `??` for backgroundUrl so an unset (empty-string)
-   * value still falls back to the world background.
+   * DataModel defaults backgroundUrl to ""; no worldBg auto-fallback here
+   * because "" and "explicitly cleared" are the same value — the user sets
+   * worldBg explicitly via the "Use World Background" button.
    * @override
    * @returns {Promise<object>}
    */
   async _prepareContext(options) {
     const settings = game.settings.get(MODULE_ID, "appearanceSettings");
     const worldBg = game.world.background ?? "";
-    const backgroundUrl = settings.backgroundUrl || worldBg;
+    const backgroundUrl = settings.backgroundUrl;
     const template = normalizeTemplate(settings.template);
     return {
       backgroundUrl,
@@ -73,7 +74,9 @@ export class AppearanceEditor extends foundry.applications.api.HandlebarsApplica
       hasBackground: !!backgroundUrl,
       faviconUrl: settings.faviconUrl,
       screenTitle: settings.screenTitle,
-      videoAudio: settings.videoAudio
+      videoAudio: settings.videoAudio,
+      // Solar system has a self-contained animated background; custom BG not applicable.
+      isSelfContained: template === "solar-system"
     };
   }
 

@@ -30,6 +30,13 @@
     </section>
 
     {{!-- Background section --}}
+    {{#if isSelfContained}}
+    <section class="cl-section">
+      <h3 class="cl-section-title">Background</h3>
+      <input type="hidden" class="cl-bg-url" name="backgroundUrl" value="" />
+      <p class="cl-hint">The Solar System layout has a built-in animated starfield background. Custom backgrounds are not supported for this layout.</p>
+    </section>
+    {{else}}
     <section class="cl-section">
       <h3 class="cl-section-title">Background</h3>
 
@@ -75,6 +82,7 @@
       <p class="cl-hint">When enabled, the video's audio will play after the user moves the mouse or clicks anywhere on the login screen.</p>
       {{/if}}
     </section>
+    {{/if}}
 
   </div>
 
