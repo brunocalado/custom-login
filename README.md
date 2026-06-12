@@ -2,6 +2,8 @@
 
 Replace Foundry VTT's boring default login page with a **visual character screen** — your players click their portrait to join, no menus, no confusion.
 
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-red?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/mestredigital)
+
 ---
 
 ## Why use this?
@@ -102,4 +104,3 @@ Full history of changes in the [CHANGELOG](CHANGELOG.md).
 * https://pixabay.com/sound-effects/film-special-effects-game-start-317318/
 * https://pixabay.com/sound-effects/technology-ui-tap-light-513023/
 * [favicon.ico](https://game-icons.net/1x1/lorc/cultist.html)
-```

@@ -1,15 +1,18 @@
 {
   "id": "custom-login",
   "title": "Custom Login",
-  "version": "0.2.1",
+  "version": "0.3.0",
+  
   "compatibility": {
-    "minimum": "13",
-    "verified": "14.360",
-    "maximum": "14.360"
+    "minimum": "14",
+    "verified": "14"
   },
+  
   "authors": [
     {
-      "name": "Mestre Digital"
+      "name": "Mestre Digital",
+      "url": "http://youtube.com/@mestredigital",
+      "flags": {}
     }
   ],
 
