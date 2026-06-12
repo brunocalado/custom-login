@@ -98,8 +98,8 @@ export async function generateWelcomePage(entries) {
     throw new Error("No users found to generate the welcome page.");
   }
 
-  const appearance = game.settings.get(MODULE_ID, "appearanceSettings") ?? {};
-  const sounds     = game.settings.get(MODULE_ID, "soundSettings")       ?? {};
+  const appearance = game.settings.get(MODULE_ID, "appearanceSettings");
+  const sounds     = game.settings.get(MODULE_ID, "soundSettings");
   const worldBg    = game.world.background ?? "";
 
   const template = normalizeTemplate(appearance.template);
@@ -107,17 +107,18 @@ export async function generateWelcomePage(entries) {
   const data = {
     entries: resolvedEntries,
     appearance: {
-      backgroundUrl: (appearance.backgroundUrl != null) ? appearance.backgroundUrl : worldBg,
+      // || worldBg so an unset (empty-string) backgroundUrl still uses the world default.
+      backgroundUrl: appearance.backgroundUrl || worldBg,
       template,
-      faviconUrl:    appearance.faviconUrl  || "modules/custom-login/assets/screens/favicon.ico",
-      screenTitle:   appearance.screenTitle || "Welcome",
-      videoAudio:    appearance.videoAudio  ?? false
+      faviconUrl:  appearance.faviconUrl,
+      screenTitle: appearance.screenTitle,
+      videoAudio:  appearance.videoAudio
     },
     sounds: {
-      hoverSound:        sounds.hoverSound        || "modules/custom-login/assets/sfx/hover.mp3",
-      joinSound:         sounds.joinSound         || "modules/custom-login/assets/sfx/join.mp3",
-      hoverSoundEnabled: sounds.hoverSoundEnabled ?? true,
-      joinSoundEnabled:  sounds.joinSoundEnabled  ?? true
+      hoverSound:        sounds.hoverSound,
+      joinSound:         sounds.joinSound,
+      hoverSoundEnabled: sounds.hoverSoundEnabled,
+      joinSoundEnabled:  sounds.joinSoundEnabled
     }
   };
 

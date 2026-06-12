@@ -13,6 +13,42 @@ import { registerInvitationLinksHook } from "./invitation-links.js";
 
 const MODULE_ID = "custom-login";
 
+/**
+ * DataModel for the welcome page visual settings (background, template,
+ * favicon, title, video audio). Centralises field types and defaults so
+ * scattered `?? ""` guards throughout editors are no longer needed.
+ */
+class AppearanceSettingsModel extends foundry.abstract.DataModel {
+  /** @override */
+  static defineSchema() {
+    const f = foundry.data.fields;
+    return {
+      backgroundUrl: new f.StringField({ blank: true, initial: "" }),
+      template:      new f.StringField({ blank: false, initial: "carousel" }),
+      faviconUrl:    new f.StringField({ blank: true, initial: "modules/custom-login/assets/screens/favicon.ico" }),
+      screenTitle:   new f.StringField({ blank: true, initial: "Welcome" }),
+      videoAudio:    new f.BooleanField({ initial: true })
+    };
+  }
+}
+
+/**
+ * DataModel for the welcome page audio cues (hover / join sounds and their
+ * enabled flags). Centralises field types and defaults.
+ */
+class SoundSettingsModel extends foundry.abstract.DataModel {
+  /** @override */
+  static defineSchema() {
+    const f = foundry.data.fields;
+    return {
+      hoverSound:        new f.StringField({ blank: true, initial: "modules/custom-login/assets/sfx/hover.mp3" }),
+      joinSound:         new f.StringField({ blank: true, initial: "modules/custom-login/assets/sfx/join.mp3" }),
+      hoverSoundEnabled: new f.BooleanField({ initial: true }),
+      joinSoundEnabled:  new f.BooleanField({ initial: true })
+    };
+  }
+}
+
 Hooks.once("init", () => {
   game.settings.registerMenu(MODULE_ID, "welcomeLinkMenu", {
     name: "Welcome Page Link",
@@ -51,11 +87,9 @@ Hooks.once("init", () => {
   });
 
   game.settings.register(MODULE_ID, "appearanceSettings", {
-    name: "Welcome Page Appearance Settings",
-    hint: "Internal storage for the welcome page visual settings.",
     scope: "world",
     config: false,
-    type: Object,
+    type: AppearanceSettingsModel,
     default: {}
   });
 
@@ -69,11 +103,9 @@ Hooks.once("init", () => {
   });
 
   game.settings.register(MODULE_ID, "soundSettings", {
-    name: "Welcome Page Sound Settings",
-    hint: "Internal storage for hover and join audio cues.",
     scope: "world",
     config: false,
-    type: Object,
+    type: SoundSettingsModel,
     default: {}
   });
 

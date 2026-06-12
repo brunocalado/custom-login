@@ -10,18 +10,29 @@ import { getWelcomeUrl } from "./welcome-url.js";
 
 const INJECTED_ROW_ID = "custom-login-invitation-row";
 
+/**
+ * Registers the `renderInvitationLinks` hook. Called once during module init.
+ * @returns {void}
+ */
 export function registerInvitationLinksHook() {
   Hooks.on("renderInvitationLinks", onRenderInvitationLinks);
 }
 
+/**
+ * Hook: renderInvitationLinks — injects the Custom Login row into the dialog.
+ * InvitationLinks is an AppV2 in v14, so `element` is always an HTMLElement.
+ * @param {ApplicationV2} app
+ * @param {HTMLElement} element
+ */
 function onRenderInvitationLinks(app, element) {
-  const root = element instanceof HTMLElement ? element : element?.[0] ?? null;
-  if (!root) return;
-  if (root.querySelector(`#${INJECTED_ROW_ID}`)) return;
-
-  injectRow(root);
+  if (element.querySelector(`#${INJECTED_ROW_ID}`)) return;
+  injectRow(element);
 }
 
+/**
+ * Prepends a read-only Custom Login URL row with a copy button into the dialog.
+ * @param {HTMLElement} root
+ */
 function injectRow(root) {
   const url = getWelcomeUrl();
 

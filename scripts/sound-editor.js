@@ -44,25 +44,36 @@ export class SoundEditor extends foundry.applications.api.HandlebarsApplicationM
     form: { template: "modules/custom-login/templates/sound-editor.hbs" }
   };
 
+  /**
+   * Builds the template context from the SoundSettingsModel instance.
+   * DataModel guarantees all fields and their defaults, so no fallbacks needed.
+   * @override
+   * @returns {Promise<object>}
+   */
   async _prepareContext(options) {
-    const s = game.settings.get(MODULE_ID, "soundSettings") ?? {};
+    const s = game.settings.get(MODULE_ID, "soundSettings");
     return {
-      hoverSound:        s.hoverSound        ?? DEFAULT_HOVER,
-      joinSound:         s.joinSound         ?? DEFAULT_JOIN,
-      hoverSoundEnabled: s.hoverSoundEnabled ?? true,
-      joinSoundEnabled:  s.joinSoundEnabled  ?? true
+      hoverSound:        s.hoverSound,
+      joinSound:         s.joinSound,
+      hoverSoundEnabled: s.hoverSoundEnabled,
+      joinSoundEnabled:  s.joinSoundEnabled
     };
   }
 
+  /**
+   * Opens FilePicker to choose the global hover sound for the welcome page.
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target
+   */
   static async #onPickHoverSound(event, target) {
     await SoundEditor.#flushFormToSettings(this.element);
-    const s   = game.settings.get(MODULE_ID, "soundSettings") ?? {};
+    const s   = game.settings.get(MODULE_ID, "soundSettings");
     const app = this;
     new (FP())({
       type: "audio",
-      current: s.hoverSound ?? DEFAULT_HOVER,
+      current: s.hoverSound || DEFAULT_HOVER,
       callback: async (path) => {
-        const cur = game.settings.get(MODULE_ID, "soundSettings") ?? {};
+        const cur = game.settings.get(MODULE_ID, "soundSettings").toObject();
         cur.hoverSound = path;
         await game.settings.set(MODULE_ID, "soundSettings", cur);
         app.render();
@@ -70,15 +81,20 @@ export class SoundEditor extends foundry.applications.api.HandlebarsApplicationM
     }).browse();
   }
 
+  /**
+   * Opens FilePicker to choose the global join (click) sound for the welcome page.
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target
+   */
   static async #onPickJoinSound(event, target) {
     await SoundEditor.#flushFormToSettings(this.element);
-    const s   = game.settings.get(MODULE_ID, "soundSettings") ?? {};
+    const s   = game.settings.get(MODULE_ID, "soundSettings");
     const app = this;
     new (FP())({
       type: "audio",
-      current: s.joinSound ?? DEFAULT_JOIN,
+      current: s.joinSound || DEFAULT_JOIN,
       callback: async (path) => {
-        const cur = game.settings.get(MODULE_ID, "soundSettings") ?? {};
+        const cur = game.settings.get(MODULE_ID, "soundSettings").toObject();
         cur.joinSound = path;
         await game.settings.set(MODULE_ID, "soundSettings", cur);
         app.render();
@@ -86,6 +102,11 @@ export class SoundEditor extends foundry.applications.api.HandlebarsApplicationM
     }).browse();
   }
 
+  /**
+   * Persists sound settings and regenerates welcome.json, then closes the editor.
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target
+   */
   static async #onSaveAndGenerate(event, target) {
     await SoundEditor.#flushFormToSettings(this.element);
     const entries = game.settings.get(MODULE_ID, "welcomeEntries") ?? [];
@@ -102,20 +123,29 @@ export class SoundEditor extends foundry.applications.api.HandlebarsApplicationM
     }
   }
 
+  /**
+   * AppV2 form submit handler — persists form state to settings.
+   * @param {SubmitEvent} event
+   * @param {HTMLFormElement} form
+   * @param {FormDataExtended} formData
+   * @param {object} updateData
+   */
   static async #onSubmit(event, form, formData, updateData) {
     await SoundEditor.#flushFormToSettings(form);
   }
 
+  /**
+   * Reads all sound fields from the DOM and writes them as a fresh plain
+   * object to settings so the DataModel validates a complete, consistent state.
+   * @param {HTMLElement} container
+   * @returns {Promise<void>}
+   */
   static async #flushFormToSettings(container) {
-    const hoverSound        = container.querySelector(".cl-hover-sound-url")?.value ?? DEFAULT_HOVER;
-    const joinSound         = container.querySelector(".cl-join-sound-url")?.value  ?? DEFAULT_JOIN;
-    const hoverSoundEnabled = container.querySelector("input[name='hoverSoundEnabled']")?.checked ?? true;
-    const joinSoundEnabled  = container.querySelector("input[name='joinSoundEnabled']")?.checked  ?? true;
-    const s = game.settings.get(MODULE_ID, "soundSettings") ?? {};
-    s.hoverSound        = hoverSound;
-    s.joinSound         = joinSound;
-    s.hoverSoundEnabled = hoverSoundEnabled;
-    s.joinSoundEnabled  = joinSoundEnabled;
-    await game.settings.set(MODULE_ID, "soundSettings", s);
+    await game.settings.set(MODULE_ID, "soundSettings", {
+      hoverSound:        container.querySelector(".cl-hover-sound-url")?.value               ?? DEFAULT_HOVER,
+      joinSound:         container.querySelector(".cl-join-sound-url")?.value                ?? DEFAULT_JOIN,
+      hoverSoundEnabled: container.querySelector("input[name='hoverSoundEnabled']")?.checked ?? true,
+      joinSoundEnabled:  container.querySelector("input[name='joinSoundEnabled']")?.checked  ?? true
+    });
   }
 }

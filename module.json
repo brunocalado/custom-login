@@ -4,8 +4,8 @@
   "version": "0.3.0",
   
   "compatibility": {
-    "minimum": "14",
-    "verified": "14"
+    "minimum": "14.364",
+    "verified": "14.364"
   },
   
   "authors": [

@@ -53,25 +53,35 @@ export class AppearanceEditor extends foundry.applications.api.HandlebarsApplica
     }
   };
 
+  /**
+   * Builds the template context from the AppearanceSettingsModel instance.
+   * Uses `||` instead of `??` for backgroundUrl so an unset (empty-string)
+   * value still falls back to the world background.
+   * @override
+   * @returns {Promise<object>}
+   */
   async _prepareContext(options) {
-    const settings = game.settings.get(MODULE_ID, "appearanceSettings") ?? {};
+    const settings = game.settings.get(MODULE_ID, "appearanceSettings");
     const worldBg = game.world.background ?? "";
-    const backgroundUrl = settings.backgroundUrl ?? worldBg;
-
+    const backgroundUrl = settings.backgroundUrl || worldBg;
     const template = normalizeTemplate(settings.template);
-
     return {
       backgroundUrl,
       template,
       worldBg,
       isVideo: isVideoPath(backgroundUrl),
       hasBackground: !!backgroundUrl,
-      faviconUrl: settings.faviconUrl ?? DEFAULT_FAVICON,
-      screenTitle: settings.screenTitle ?? "Welcome",
-      videoAudio: settings.videoAudio ?? true
+      faviconUrl: settings.faviconUrl,
+      screenTitle: settings.screenTitle,
+      videoAudio: settings.videoAudio
     };
   }
 
+  /**
+   * Switches the visible tab panel inside the editor.
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target
+   */
   static #onSwitchTab(event, target) {
     const tab = target.dataset.tab;
     const wrap = target.closest(".cl-editor-wrap");
@@ -83,16 +93,21 @@ export class AppearanceEditor extends foundry.applications.api.HandlebarsApplica
     );
   }
 
+  /**
+   * Opens FilePicker for the welcome page background (image or video).
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target
+   */
   static async #onPickBackground(event, target) {
     await AppearanceEditor.#flushFormToSettings(this.element);
-    const settings = game.settings.get(MODULE_ID, "appearanceSettings") ?? {};
+    const settings = game.settings.get(MODULE_ID, "appearanceSettings");
     const app = this;
 
     new (FP())({
       type: "imagevideo",
-      current: settings.backgroundUrl ?? game.world.background ?? "",
+      current: settings.backgroundUrl || game.world.background || "",
       callback: async (path) => {
-        const s = game.settings.get(MODULE_ID, "appearanceSettings") ?? {};
+        const s = game.settings.get(MODULE_ID, "appearanceSettings").toObject();
         s.backgroundUrl = path;
         await game.settings.set(MODULE_ID, "appearanceSettings", s);
         app.render();
@@ -100,16 +115,21 @@ export class AppearanceEditor extends foundry.applications.api.HandlebarsApplica
     }).browse();
   }
 
+  /**
+   * Opens FilePicker for the welcome page favicon (.ico or image).
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target
+   */
   static async #onPickFavicon(event, target) {
     await AppearanceEditor.#flushFormToSettings(this.element);
-    const settings = game.settings.get(MODULE_ID, "appearanceSettings") ?? {};
+    const settings = game.settings.get(MODULE_ID, "appearanceSettings");
     const app = this;
 
     new (FP())({
       type: "image",
-      current: settings.faviconUrl ?? DEFAULT_FAVICON,
+      current: settings.faviconUrl || DEFAULT_FAVICON,
       callback: async (path) => {
-        const s = game.settings.get(MODULE_ID, "appearanceSettings") ?? {};
+        const s = game.settings.get(MODULE_ID, "appearanceSettings").toObject();
         s.faviconUrl = path;
         await game.settings.set(MODULE_ID, "appearanceSettings", s);
         app.render();
@@ -117,22 +137,37 @@ export class AppearanceEditor extends foundry.applications.api.HandlebarsApplica
     }).browse();
   }
 
+  /**
+   * Sets the background to the world's configured background image/video.
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target
+   */
   static async #onUseWorldBackground(event, target) {
     await AppearanceEditor.#flushFormToSettings(this.element);
-    const settings = game.settings.get(MODULE_ID, "appearanceSettings") ?? {};
-    settings.backgroundUrl = game.world.background ?? "";
-    await game.settings.set(MODULE_ID, "appearanceSettings", settings);
+    const s = game.settings.get(MODULE_ID, "appearanceSettings").toObject();
+    s.backgroundUrl = game.world.background ?? "";
+    await game.settings.set(MODULE_ID, "appearanceSettings", s);
     this.render();
   }
 
+  /**
+   * Clears the welcome page background so it falls back to the world default.
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target
+   */
   static async #onClearBackground(event, target) {
     await AppearanceEditor.#flushFormToSettings(this.element);
-    const settings = game.settings.get(MODULE_ID, "appearanceSettings") ?? {};
-    settings.backgroundUrl = "";
-    await game.settings.set(MODULE_ID, "appearanceSettings", settings);
+    const s = game.settings.get(MODULE_ID, "appearanceSettings").toObject();
+    s.backgroundUrl = "";
+    await game.settings.set(MODULE_ID, "appearanceSettings", s);
     this.render();
   }
 
+  /**
+   * Flushes form state, generates welcome.json, and closes the editor.
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target
+   */
   static async #onGeneratePage(event, target) {
     await AppearanceEditor.#flushFormToSettings(this.element);
     const entries = game.settings.get(MODULE_ID, "welcomeEntries") ?? [];
@@ -157,22 +192,31 @@ export class AppearanceEditor extends foundry.applications.api.HandlebarsApplica
     window.open(getWelcomeUrl(), "_blank");
   }
 
+  /**
+   * AppV2 form submit handler — persists form state to settings.
+   * @param {SubmitEvent} event
+   * @param {HTMLFormElement} form
+   * @param {FormDataExtended} formData
+   * @param {object} updateData
+   */
   static async #onSubmit(event, form, formData, updateData) {
     await AppearanceEditor.#flushFormToSettings(form);
   }
 
+  /**
+   * Reads all appearance fields from the DOM and writes them as a fresh
+   * plain object to settings. Passing a full object (not a partial patch)
+   * ensures the DataModel always validates a complete, consistent state.
+   * @param {HTMLElement} container
+   * @returns {Promise<void>}
+   */
   static async #flushFormToSettings(container) {
-    const backgroundUrl = container.querySelector(".cl-bg-url")?.value        ?? "";
-    const template      = container.querySelector(".cl-template-select")?.value ?? "carousel";
-    const faviconUrl    = container.querySelector(".cl-favicon-url")?.value    ?? DEFAULT_FAVICON;
-    const screenTitle   = container.querySelector(".cl-screen-title")?.value   ?? "Welcome";
-    const videoAudio    = container.querySelector(".cl-video-audio-toggle")?.checked ?? false;
-    const settings = game.settings.get(MODULE_ID, "appearanceSettings") ?? {};
-    settings.backgroundUrl = backgroundUrl;
-    settings.template      = template;
-    settings.faviconUrl    = faviconUrl;
-    settings.screenTitle   = screenTitle;
-    settings.videoAudio    = videoAudio;
-    await game.settings.set(MODULE_ID, "appearanceSettings", settings);
+    await game.settings.set(MODULE_ID, "appearanceSettings", {
+      backgroundUrl: container.querySelector(".cl-bg-url")?.value             ?? "",
+      template:      container.querySelector(".cl-template-select")?.value    ?? "carousel",
+      faviconUrl:    container.querySelector(".cl-favicon-url")?.value        ?? DEFAULT_FAVICON,
+      screenTitle:   container.querySelector(".cl-screen-title")?.value       ?? "Welcome",
+      videoAudio:    container.querySelector(".cl-video-audio-toggle")?.checked ?? false
+    });
   }
 }
