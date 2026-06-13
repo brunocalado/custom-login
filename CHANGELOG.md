@@ -1,3 +1,9 @@
+# 0.3.1
+
+- [Added] Summoning Circle layout — decorative magic circle with player orbs positioned in a ring; features deterministic mandala symbols (generated uniquely per player), animated starfield background, and two-step login: click orb to select + click center to enter (or press Escape to deselect).
+- [Changed] Summoning Circle and Solar System layouts are now marked as self-contained; the Appearance Editor prevents setting custom backgrounds for both, and the generator forces `backgroundUrl: ""` to preserve their built-in animated effects.
+- [Changed] Appearance Editor background section hint updated to reflect both self-contained layouts.
+
 # 0.3.0
 
 - [Added] `AppearanceSettingsModel` and `SoundSettingsModel` — `foundry.abstract.DataModel` with typed `foundry.data.fields` replacing raw `Object` settings; field types and defaults are now centralised and validated automatically.

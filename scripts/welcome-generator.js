@@ -107,9 +107,9 @@ export async function generateWelcomePage(entries) {
   const data = {
     entries: resolvedEntries,
     appearance: {
-      // Solar system renders its own starfield; any stored backgroundUrl must be cleared
-      // so the template does not suppress the canvas animation.
-      backgroundUrl: template === "solar-system" ? "" : appearance.backgroundUrl,
+      // Self-contained layouts render their own animated backgrounds; clear any stored
+      // backgroundUrl so the template does not suppress the built-in animation.
+      backgroundUrl: (template === "solar-system" || template === "summoning-circle") ? "" : appearance.backgroundUrl,
       template,
       faviconUrl:  appearance.faviconUrl,
       screenTitle: appearance.screenTitle,

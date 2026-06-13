@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html, body { width:100%; height:100%; overflow:hidden; background:#04030a; }
+
+    #bg { position:fixed; inset:0; z-index:0; }
+
+    .fog {
+      position:fixed; inset:0; z-index:1; pointer-events:none;
+      background:
+        radial-gradient(ellipse 80% 55% at 50% 105%, rgba(55,12,100,.45) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 12%  65%, rgba(10,45,120,.28) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 35% at 90%  25%, rgba(80,18,55,.2)   0%, transparent 55%);
+      animation: fog-drift 9s ease-in-out infinite alternate;
+    }
+    @keyframes fog-drift { from { opacity:.8; } to { opacity:1; } }
+
+    #app {
+      position:relative; z-index:2;
+      width:100vw; height:100vh;
+      display:flex; align-items:center; justify-content:center;
+    }
+
+    /* ── Circle stage ── */
+    #circle-stage {
+      position:relative;
+      width:  min(70vh, 70vw, 660px);
+      height: min(70vh, 70vw, 660px);
+    }
+
+    /* ── SVG ring animations ── */
+    .ring-outer-g { animation: spin-cw  45s linear infinite; }
+    .ring-mid-g   { animation: spin-ccw 28s linear infinite; }
+    .ring-inner-g { animation: pulse-g   5s ease-in-out infinite; }
+    @keyframes spin-cw  { to { transform: rotate(360deg);  } }
+    @keyframes spin-ccw { to { transform: rotate(-360deg); } }
+    @keyframes pulse-g  { 0%,100%{ opacity:.65; } 50%{ opacity:1; } }
+
+    #circle-stage.activated .ring-inner-g {
+      animation: pulse-active 1.1s ease-in-out infinite;
+    }
+    @keyframes pulse-active {
+      0%,100% { opacity:.72; filter: brightness(1.8) drop-shadow(0 0 7px  rgba(196,164,74,.75)); }
+      50%     { opacity:1;   filter: brightness(3.2) drop-shadow(0 0 18px rgba(196,164,74,1));   }
+    }
+
+    /* ── Player orbs ── */
+    .player-orb {
+      position:absolute;
+      transform: translate(-50%,-50%);
+      cursor:pointer; z-index:10;
+      opacity:0;
+      animation: orb-appear .5s ease-out forwards;
+    }
+    @keyframes orb-appear { to { opacity:1; } }
+
+    .orb-shell {
+      border-radius:50%;
+      border: 2px solid rgba(var(--c),.38);
+      background:
+        radial-gradient(circle at 38% 32%, rgba(255,255,255,.1) 0%, transparent 52%),
+        radial-gradient(circle, rgba(var(--c),.18) 0%, rgba(var(--c),.04) 68%, transparent 100%);
+      box-shadow: 0 0 14px rgba(var(--c),.3), inset 0 0 10px rgba(var(--c),.08);
+      display:flex; align-items:center; justify-content:center;
+      transition: border-color .28s, box-shadow .28s, transform .28s;
+      overflow:hidden; position:relative;
+    }
+    .orb-shell::after {
+      content:''; position:absolute; inset:0; border-radius:50%;
+      background: conic-gradient(
+        rgba(var(--c),0)   0deg,   rgba(var(--c),.22)  60deg,
+        rgba(var(--c),0) 120deg,   rgba(var(--c),.1)  210deg,
+        rgba(var(--c),0) 265deg,   rgba(var(--c),.18) 320deg,
+        rgba(var(--c),0) 360deg
+      );
+      animation: shimmer 4s linear infinite;
+    }
+    @keyframes shimmer { to { transform: rotate(360deg); } }
+
+    .orb-mandala {
+      position:absolute; inset:0; z-index:1;
+      display:flex; align-items:center; justify-content:center;
+      pointer-events:none;
+    }
+    .orb-label {
+      position:absolute; top:calc(100% + 5px); left:50%;
+      transform:translateX(-50%);
+      font-family:'Cinzel', serif; font-weight:500;
+      color: rgba(var(--c),.5); white-space:nowrap; letter-spacing:.07em;
+      transition: color .28s, text-shadow .28s; pointer-events:none;
+    }
+
+    .player-orb:hover .orb-shell,
+    .player-orb.active .orb-shell {
+      border-color: rgba(var(--c),.9);
+      box-shadow: 0 0 28px rgba(var(--c),.72), 0 0 65px rgba(var(--c),.3), inset 0 0 16px rgba(var(--c),.15);
+      transform: scale(1.15);
+    }
+    .player-orb.active .orb-shell { transform: scale(1.22); }
+    .player-orb:hover .orb-label,
+    .player-orb.active .orb-label { color: rgba(var(--c),1); text-shadow: 0 0 8px rgba(var(--c),.6); }
+
+    /* ── Center display ── */
+    #center {
+      position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      width:40%; aspect-ratio:1;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      text-align:center; z-index:8; pointer-events:none;
+      gap:.5rem;
+    }
+    #c-hint {
+      font-family:'Cinzel', serif;
+      font-size:clamp(.44rem,.9vw,.66rem);
+      color: rgba(196,164,74,.32); letter-spacing:.28em;
+      transition: opacity .3s;
+    }
+    #c-name {
+      font-family:'Cinzel Decorative', serif;
+      font-weight:700; letter-spacing:.14em;
+      color:#c4a44a; text-shadow: 0 0 18px currentColor;
+      opacity:0; transform:scale(.85);
+      transition: opacity .32s, transform .32s, color .28s, text-shadow .28s;
+      word-break:break-word; padding:0 6px;
+      font-size:clamp(.78rem,1.6vw,1.35rem);
+      line-height:1.2;
+    }
+
+    #center.clickable { cursor:crosshair; pointer-events:auto; }
+    #center.clickable::before {
+      content:''; position:absolute; inset:-18px; border-radius:50%;
+      background:radial-gradient(circle, rgba(196,164,74,.16) 0%, transparent 66%);
+      animation:star-pulse 2.2s ease-in-out infinite;
+      pointer-events:none; z-index:-1;
+    }
+    @keyframes star-pulse {
+      0%,100%{ opacity:.45; transform:scale(.88); }
+      50%    { opacity:1;   transform:scale(1.16); }
+    }
+
+    /* ── Connector line SVG ── */
+    #conn-svg {
+      position:absolute; inset:0; pointer-events:none; z-index:7; overflow:visible;
+    }
+    .conn-glow { stroke-linecap:round; }
+    .conn-dash {
+      stroke-linecap:round;
+      stroke-dasharray: 5 4;
+      animation: dash-march .7s linear infinite;
+    }
+    @keyframes dash-march { to { stroke-dashoffset: -18; } }
+  </style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+<div class="fog"></div>
+<div id="app">
+  <div id="circle-stage">
+    <svg id="conn-svg"></svg>
+    <div id="center">
+      <div id="c-hint">SELECT YOUR CHAMPION</div>
+      <div id="c-name"></div>
+    </div>
+  </div>
+</div>
+
+<div id="cl-status">Loading&hellip;</div>
+
+<script src="/modules/custom-login/assets/screens/shared.js"></script>
+<script>
+  history.replaceState(null, '', 'index.html');
+
+  /* ── Module-level state ── */
+  let activeEntry = null;
+  let activeOrbEl = null;
+  let _entries    = [];
+  let _showNames  = true;
+  let _soundCfg   = {};
+
+  /* ── Utilities ── */
+  const f = n => (+n).toFixed(2);
+  const hexToRgb = h => [1,3,5].map(i => parseInt(h.slice(i,i+2),16));
+  const lcg = s => { let v=s; return () => { v=(v*1664525+1013904223)&0xffffffff; return (v>>>0)/0xffffffff; }; };
+
+  /**
+   * Hashes a string to a positive 32-bit integer for use as a deterministic seed.
+   * @param {string} s
+   * @returns {number}
+   */
+  function hashStr(s) {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return h;
+  }
+
+  /* ── Mandala generator ── */
+  function petalPath(cx, cy, angle, r1, r2, width) {
+    const tx = cx + Math.cos(angle)*r2, ty = cy + Math.sin(angle)*r2;
+    const bx = cx + Math.cos(angle)*r1, by = cy + Math.sin(angle)*r1;
+    const pa = angle + Math.PI/2, mid = (r1+r2)/2;
+    const lx = cx + Math.cos(angle)*mid + Math.cos(pa)*width;
+    const ly = cy + Math.sin(angle)*mid + Math.sin(pa)*width;
+    const Rx = cx + Math.cos(angle)*mid - Math.cos(pa)*width;
+    const Ry = cy + Math.sin(angle)*mid - Math.sin(pa)*width;
+    return `M${f(bx)},${f(by)} Q${f(lx)},${f(ly)} ${f(tx)},${f(ty)} Q${f(Rx)},${f(Ry)} ${f(bx)},${f(by)}Z`;
+  }
+
+  /**
+   * Generates a unique mandala SVG string for a player.
+   * @param {number} seed  - deterministic seed derived from userId
+   * @param {string} color - hex colour
+   * @param {number} size  - pixel size (square)
+   * @returns {string} SVG markup
+   */
+  function makeMandala(seed, color, size) {
+    let sv = (seed * 2654435761) >>> 0;
+    const rng = () => { sv^=sv<<13; sv^=sv>>17; sv^=sv<<5; return (sv>>>0)/0xffffffff; };
+    const [r,g,b] = hexToRgb(color);
+    const c = a => `rgba(${r},${g},${b},${a})`;
+    const cx = size/2, cy = size/2;
+    const n       = 4 + Math.floor(rng()*5);
+    const pOut    = size*(.34 + rng()*.06);
+    const pIn     = size*(.14 + rng()*.05);
+    const pW      = size*(.09 + rng()*.05);
+    const hasOuter = rng() > .32;
+    const hasMid   = rng() > .38;
+    const hasInner = rng() > .38;
+    const els = [];
+
+    if (hasOuter) {
+      const oR = size*.43;
+      els.push(`<circle cx="${cx}" cy="${cy}" r="${f(oR)}" fill="none" stroke="${c(.17)}" stroke-width=".7"/>`);
+      for (let i=0; i<n*2; i++) {
+        const a = (i/(n*2))*Math.PI*2;
+        els.push(`<line x1="${f(cx+Math.cos(a)*oR*.93)}" y1="${f(cy+Math.sin(a)*oR*.93)}" x2="${f(cx+Math.cos(a)*oR)}" y2="${f(cy+Math.sin(a)*oR)}" stroke="${c(.2)}" stroke-width=".5"/>`);
+      }
+    }
+
+    for (let i=0; i<n; i++) {
+      const a = (i/n)*Math.PI*2;
+      els.push(`<path d="${petalPath(cx,cy,a,pIn,pOut,pW)}" fill="${c(.12)}" stroke="${c(.52)}" stroke-width=".85"/>`);
+    }
+
+    if (hasMid) {
+      const mOut = pIn*1.6 + rng()*.12*size;
+      for (let i=0; i<n; i++) {
+        const a = ((i+.5)/n)*Math.PI*2;
+        els.push(`<path d="${petalPath(cx,cy,a,size*.07,mOut,pW*.54)}" fill="${c(.07)}" stroke="${c(.28)}" stroke-width=".6"/>`);
+      }
+    }
+
+    els.push(`<circle cx="${cx}" cy="${cy}" r="${f(pIn)}" fill="none" stroke="${c(.46)}" stroke-width="1"/>`);
+
+    if (hasInner) {
+      const pts = Array.from({length:n}, (_,i) => {
+        const a = (i/n)*Math.PI*2 - Math.PI/2;
+        return `${f(cx+Math.cos(a)*pIn*.72)},${f(cy+Math.sin(a)*pIn*.72)}`;
+      }).join(' ');
+      els.push(`<polygon points="${pts}" fill="${c(.07)}" stroke="${c(.33)}" stroke-width=".7"/>`);
+    }
+
+    for (let i=0; i<n; i++) {
+      const a = (i/n)*Math.PI*2;
+      els.push(`<circle cx="${f(cx+Math.cos(a)*pOut)}" cy="${f(cy+Math.sin(a)*pOut)}" r="${f(size*.022)}" fill="${c(.5)}"/>`);
+    }
+    els.push(`<circle cx="${cx}" cy="${cy}" r="${f(size*.048)}" fill="${c(.46)}"/>`);
+    els.push(`<circle cx="${cx}" cy="${cy}" r="${f(size*.02)}" fill="${c(.9)}"/>`);
+    return `<svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">${els.join('')}</svg>`;
+  }
+
+  /* ── Magic circle SVG ── */
+  /**
+   * Builds the decorative summoning circle SVG that fills the stage.
+   * @param {number} S - stage size in pixels
+   * @returns {string} SVG markup
+   */
+  function makeMagicSVG(S) {
+    const cx=S/2, cy=S/2;
+    const g='rgba(196,164,74,.2)', gm='rgba(196,164,74,.5)', gb='#c4a44a';
+
+    const ticks = Array.from({length:24}, (_,i) => {
+      const a = (i/24)*Math.PI*2, major = i%6===0;
+      const r1 = cx*.88, r2 = cx*(major ? .96 : .925);
+      return `<line x1="${f(cx+Math.cos(a)*r1)}" y1="${f(cy+Math.sin(a)*r1)}" x2="${f(cx+Math.cos(a)*r2)}" y2="${f(cy+Math.sin(a)*r2)}" stroke="${major?gm:g}" stroke-width="${major?1.6:.9}"/>`;
+    }).join('');
+
+    const spokes = Array.from({length:6}, (_,i) => {
+      const a = (i/6)*Math.PI*2, r1=cx*.38, r2=cx*.72;
+      return `<line x1="${f(cx+Math.cos(a)*r1)}" y1="${f(cy+Math.sin(a)*r1)}" x2="${f(cx+Math.cos(a)*r2)}" y2="${f(cy+Math.sin(a)*r2)}" stroke="${g}" stroke-width=".7"/>`;
+    }).join('');
+
+    const pr = cx*.28;
+    const penta = [0,2,4,1,3].map(i => {
+      const a = (i/5)*Math.PI*2 - Math.PI/2;
+      return `${f(cx+Math.cos(a)*pr)},${f(cy+Math.sin(a)*pr)}`;
+    }).join(' ');
+
+    const rads = Array.from({length:8}, (_,i) => {
+      const a = (i/8)*Math.PI*2, r1=cx*.08, r2=cx*.34;
+      return `<line x1="${f(cx+Math.cos(a)*r1)}" y1="${f(cy+Math.sin(a)*r1)}" x2="${f(cx+Math.cos(a)*r2)}" y2="${f(cy+Math.sin(a)*r2)}" stroke="${g}" stroke-width=".7"/>`;
+    }).join('');
+
+    const arcs = Array.from({length:12}, (_,i) => {
+      const a=( i   /12)*Math.PI*2, a2=((i+.5)/12)*Math.PI*2, r=cx*.915;
+      const x1=f(cx+Math.cos(a)*r),  y1=f(cy+Math.sin(a)*r);
+      const x2=f(cx+Math.cos(a2)*r), y2=f(cy+Math.sin(a2)*r);
+      return `<path d="M ${x1} ${y1} A ${f(r)} ${f(r)} 0 0 1 ${x2} ${y2}" fill="none" stroke="${g}" stroke-width=".6"/>`;
+    }).join('');
+
+    return `<svg class="magic-svg" viewBox="0 0 ${S} ${S}" style="position:absolute;inset:0;pointer-events:none;" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="sc-f-g"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="sc-f-s"><feGaussianBlur stdDeviation="7"   result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <radialGradient id="sc-center-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="rgba(80,30,160,0.18)"/>
+      <stop offset="100%" stop-color="rgba(80,30,160,0)"/>
+    </radialGradient>
+  </defs>
+  <circle cx="${cx}" cy="${cy}" r="${f(cx*.38)}" fill="url(#sc-center-glow)" filter="url(#sc-f-s)"/>
+  <g class="ring-outer-g" style="transform-origin:${cx}px ${cy}px">
+    <circle cx="${cx}" cy="${cy}" r="${f(cx*.95)}"  fill="none" stroke="${g}"  stroke-width=".7"/>
+    <circle cx="${cx}" cy="${cy}" r="${f(cx*.905)}" fill="none" stroke="${gm}" stroke-width="1.5" filter="url(#sc-f-g)"/>
+    ${ticks}${arcs}
+  </g>
+  <g class="ring-mid-g" style="transform-origin:${cx}px ${cy}px">
+    <circle cx="${cx}" cy="${cy}" r="${f(cx*.72)}" fill="none" stroke="${gm}" stroke-width="1.1" stroke-dasharray="7 4"/>
+    ${spokes}
+  </g>
+  <g class="ring-inner-g" filter="url(#sc-f-g)">
+    <circle cx="${cx}" cy="${cy}" r="${f(cx*.36)}" fill="none" stroke="${gb}" stroke-width="1.5"/>
+    <polygon points="${penta}" fill="rgba(196,164,74,.06)" stroke="${gb}" stroke-width="1.2" filter="url(#sc-f-g)"/>
+    ${rads}
+    <circle cx="${cx}" cy="${cy}" r="${f(cx*.058)}" fill="${gm}" filter="url(#sc-f-s)"/>
+    <circle cx="${cx}" cy="${cy}" r="${f(cx*.026)}" fill="${gb}"/>
+  </g>
+</svg>`;
+  }
+
+  /* ── Starfield ── */
+  function paintBg() {
+    const bgEl = document.getElementById('bg');
+    bgEl.width  = window.innerWidth;
+    bgEl.height = window.innerHeight;
+    const W = bgEl.width, H = bgEl.height;
+    const ctx = bgEl.getContext('2d');
+
+    ctx.fillStyle = '#04030a';
+    ctx.fillRect(0, 0, W, H);
+
+    [[.5,.5,.55,'rgba(38,10,75,0.48)'], [.16,.72,.35,'rgba(10,38,110,0.3)'], [.84,.24,.3,'rgba(75,14,48,0.22)']].forEach(([x,y,r,c]) => {
+      const g = ctx.createRadialGradient(W*x,H*y,0,W*x,H*y,W*r);
+      g.addColorStop(0,c); g.addColorStop(1,'transparent');
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    });
+
+    const rng = lcg(9473);
+    for (let i=0; i<300; i++) {
+      const x=rng()*W, y=rng()*H;
+      const size = rng()<.82 ? rng()*.9+.1 : rng()*2.2+.5;
+      const bright = rng() < .05;
+      const hue = rng()<.6 ? 0 : rng()<.5 ? 220 : 280;
+      ctx.beginPath(); ctx.arc(x,y,size,0,Math.PI*2);
+      ctx.fillStyle = bright
+        ? `hsla(${hue},60%,98%,${.7+rng()*.3})`
+        : `hsla(${hue},25%,92%,${.12+rng()*.65})`;
+      ctx.fill();
+      if (bright) {
+        const g2 = ctx.createRadialGradient(x,y,0,x,y,size*5);
+        g2.addColorStop(0,`hsla(${hue},60%,90%,.18)`); g2.addColorStop(1,'transparent');
+        ctx.fillStyle=g2; ctx.beginPath(); ctx.arc(x,y,size*5,0,Math.PI*2); ctx.fill();
+      }
+    }
+  }
+
+  /* ── Build stage ── */
+  /**
+   * Builds the magic circle SVG and all player orbs for the current stage size.
+   * @param {object[]} entries
+   * @param {boolean}  showNames
+   * @param {object}   soundCfg
+   */
+  function buildStage(entries, showNames, soundCfg) {
+    const stage = document.getElementById('circle-stage');
+    const S = stage.offsetWidth;
+    if (!S) return;
+
+    stage.querySelectorAll('.magic-svg, .player-orb').forEach(e => e.remove());
+    stage.insertAdjacentHTML('afterbegin', makeMagicSVG(S));
+
+    const n       = entries.length;
+    const orbR    = S * 0.435;
+    const cx      = S/2, cy = S/2;
+    const orbSize = Math.max(52, Math.min(72, Math.floor(2 * Math.PI * orbR / n * 0.55)));
+    const labelSz = Math.max(8, Math.floor(orbSize * 0.145));
+
+    entries.forEach(function(entry, i) {
+      const angle = (i/n)*Math.PI*2 - Math.PI/2;
+      const x = cx + Math.cos(angle)*orbR;
+      const y = cy + Math.sin(angle)*orbR;
+      const [r,g,b] = hexToRgb(entry.color || '#c4a44a');
+      const seed    = hashStr(entry.userId);
+      const name    = displayName(entry);
+      const label   = name.length > 10 ? name.slice(0,9) + '…' : name;
+
+      const el = document.createElement('div');
+      el.className = 'player-orb' + (activeEntry?.userId === entry.userId ? ' active' : '');
+      el.style.cssText = `left:${x}px;top:${y}px;--c:${r},${g},${b};width:${orbSize}px;height:${orbSize}px;animation-delay:${i*.07}s`;
+      el.dataset.uid = entry.userId;
+
+      el.innerHTML = `
+        <div class="orb-shell" style="width:${orbSize}px;height:${orbSize}px">
+          <span class="orb-mandala">${makeMandala(seed, entry.color || '#c4a44a', orbSize)}</span>
+        </div>
+        ${showNames ? `<div class="orb-label" style="font-size:${labelSz}px">${esc(label)}</div>` : ''}`;
+
+      el.addEventListener('mouseenter', function() { onHover(entry); });
+      el.addEventListener('mouseleave', function() { onLeave(); });
+      el.addEventListener('click',      function() { onSelect(entry, el, soundCfg); });
+
+      stage.appendChild(el);
+    });
+
+    // Re-draw connection if still active after rebuild
+    if (activeEntry && activeOrbEl) {
+      const restored = stage.querySelector(`[data-uid="${activeEntry.userId}"]`);
+      if (restored) { activeOrbEl = restored; updateConn(activeEntry, restored); }
+    }
+  }
+
+  /* ── Center display ── */
+  function showName(name, color) {
+    document.getElementById('c-hint').style.opacity = '0';
+    const el = document.getElementById('c-name');
+    el.textContent  = name;
+    el.style.color       = color;
+    el.style.textShadow  = `0 0 18px ${color}90, 0 0 42px ${color}44`;
+    el.style.opacity     = '1';
+    el.style.transform   = 'scale(1)';
+  }
+  function clearName() {
+    document.getElementById('c-hint').style.opacity = '1';
+    const el = document.getElementById('c-name');
+    el.style.opacity   = '0';
+    el.style.transform = 'scale(.85)';
+  }
+
+  /* ── Connection line ── */
+  /**
+   * Draws or clears the dotted connector line between the selected orb and center.
+   * @param {object|null}    entry
+   * @param {HTMLElement|null} orbEl
+   */
+  function updateConn(entry, orbEl) {
+    const svg = document.getElementById('conn-svg');
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    if (!entry || !orbEl) return;
+
+    const stage = document.getElementById('circle-stage');
+    const S = stage.offsetWidth;
+    const sRect = stage.getBoundingClientRect();
+    const oRect = orbEl.getBoundingClientRect();
+    const cx = S/2, cy = S/2;
+    const ox = oRect.left - sRect.left + oRect.width/2;
+    const oy = oRect.top  - sRect.top  + oRect.height/2;
+
+    svg.setAttribute('viewBox', `0 0 ${S} ${S}`);
+    const [r,g,b] = hexToRgb(entry.color || '#c4a44a');
+    const ns = 'http://www.w3.org/2000/svg';
+
+    function mkLine(cls, sw, opacity) {
+      const ln = document.createElementNS(ns, 'line');
+      ['x1','y1','x2','y2'].forEach((a,i) => ln.setAttribute(a, [cx,cy,ox,oy][i]));
+      ln.setAttribute('stroke', `rgba(${r},${g},${b},${opacity})`);
+      ln.setAttribute('stroke-width', sw);
+      ln.setAttribute('class', cls);
+      svg.appendChild(ln);
+    }
+    mkLine('conn-glow', 6,   .2);
+    mkLine('conn-dash', 1.5, .7);
+  }
+
+  /* ── Deselect ── */
+  function deselect() {
+    activeEntry = null;
+    activeOrbEl = null;
+    document.querySelectorAll('.player-orb').forEach(o => o.classList.remove('active'));
+    document.getElementById('circle-stage').classList.remove('activated');
+    document.getElementById('center').classList.remove('clickable');
+    updateConn(null, null);
+    clearName();
+  }
+
+  /* ── Hover ── */
+  function onHover(entry) {
+    if (activeEntry) return;
+    showName(displayName(entry), entry.color || '#c4a44a');
+  }
+  function onLeave() {
+    if (activeEntry) return;
+    clearName();
+  }
+
+  /* ── Select ── */
+  /**
+   * Handles clicking a player orb — selects it and draws the connection line.
+   * Clicking the same orb twice deselects.
+   * @param {object}      entry
+   * @param {HTMLElement} orbEl
+   * @param {object}      soundCfg
+   */
+  function onSelect(entry, orbEl, soundCfg) {
+    // Toggle off if already active
+    if (activeEntry?.userId === entry.userId) {
+      deselect();
+      return;
+    }
+
+    activeEntry = entry;
+    activeOrbEl = orbEl;
+
+    document.querySelectorAll('.player-orb').forEach(o => o.classList.toggle('active', o.dataset.uid === entry.userId));
+    showName(displayName(entry), entry.color || '#c4a44a');
+    updateConn(entry, orbEl);
+
+    document.getElementById('center').classList.add('clickable');
+    document.getElementById('circle-stage').classList.add('activated');
+
+    // Hover sound on select
+    const hoverSrc = entry.hoverSound || soundCfg.hoverSound || 'modules/custom-login/assets/sfx/hover.mp3';
+    if (soundCfg.hoverSoundEnabled !== false) {
+      const a = new Audio(toAbsolute(hoverSrc)); a.volume = 0.6; a.play().catch(() => {});
+    }
+  }
+
+  /* ── Login via center click ── */
+  /**
+   * Triggered when the active center button is clicked.
+   * Plays join sound and calls loginAs (with optional password dialog).
+   * @param {object} entry
+   * @param {object} soundCfg
+   */
+  function enterRealm(entry, soundCfg) {
+    const joinSrc = entry.joinSound || soundCfg.joinSound || 'modules/custom-login/assets/sfx/join.mp3';
+    function doLogin(pw) {
+      if (soundCfg.joinSoundEnabled !== false) {
+        const a = new Audio(toAbsolute(joinSrc)); a.volume = 0.8; a.play().catch(() => {});
+      }
+      loginAs(entry.userId, pw);
+    }
+    if (entry.requirePassword) showPasswordDialog(doLogin);
+    else doLogin('');
+  }
+
+  /* ── Init ── */
+  async function init() {
+    injectSharedStyles();
+    const statusEl = document.getElementById('cl-status');
+    const jsonPath = await resolveJsonPath();
+    if (!jsonPath) { await showNoWorldPage(); return; }
+
+    const res = await fetch(jsonPath, { cache: 'no-cache' });
+    if (res.status === 404) { await showNoWorldPage(); return; }
+    if (!res.ok) { statusEl.textContent = 'Could not load player list (' + res.status + ').'; return; }
+
+    const raw      = await res.json();
+    const entries  = Array.isArray(raw) ? raw : (raw.entries    ?? []);
+    const appear   = Array.isArray(raw) ? {}  : (raw.appearance ?? {});
+    const soundCfg = Array.isArray(raw) ? {}  : (raw.sounds     ?? {});
+
+    const faviconLink = document.createElement('link');
+    faviconLink.rel  = 'shortcut icon';
+    faviconLink.href = toAbsolute(appear.faviconUrl || 'modules/custom-login/assets/screens/favicon.ico');
+    document.head.appendChild(faviconLink);
+
+    document.title = appear.screenTitle || 'Welcome';
+
+    const valid = entries.filter(e => e.userId);
+    if (!valid.length) {
+      statusEl.textContent = 'No players configured yet. Ask your GM to set up the welcome page.';
+      return;
+    }
+
+    // Assign slot colours to entries (cycle through palette)
+    const PALETTE = ['#c9a84c','#00f5d4','#9b5de5','#f72585','#4cc9f0','#7aff72','#ff6b35','#e040fb'];
+    valid.forEach((e, i) => { e.color = e.color || PALETTE[i % PALETTE.length]; });
+
+    const showNames = (appear.showNames ?? 'yes') !== 'no';
+
+    // Stash for resize handler
+    _entries   = valid;
+    _showNames = showNames;
+    _soundCfg  = soundCfg;
+
+    statusEl.remove();
+
+    paintBg();
+    requestAnimationFrame(() => buildStage(valid, showNames, soundCfg));
+
+    // Center click → login
+    document.getElementById('center').addEventListener('click', function() {
+      if (activeEntry) enterRealm(activeEntry, soundCfg);
+    });
+
+    // Escape → deselect
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') deselect();
+    });
+
+    window.addEventListener('resize', function() {
+      paintBg();
+      buildStage(_entries, _showNames, _soundCfg);
+    });
+  }
+
+  init();
+</script>
+</body>
+</html>

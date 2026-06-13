@@ -25,8 +25,9 @@
         <option value="sidebar" {{#if (eq template "sidebar")}}selected{{/if}}>Sidebar — Square</option>
         <option value="solar-system" {{#if (eq template "solar-system")}}selected{{/if}}>Solar System — Square</option>
         <option value="sleek-phantom" {{#if (eq template "sleek-phantom")}}selected{{/if}}>Sleek Phantom — 9:16</option>
+        <option value="summoning-circle" {{#if (eq template "summoning-circle")}}selected{{/if}}>Summoning Circle — No images</option>
       </select>
-      <p class="cl-hint">Carousel, Portrait Row, Card Hand, and Sleek Phantom layouts use 9:16 images. Photo Grid, Solar System, and Sidebar use square (1:1) images and show no text unless player names are enabled.</p>
+      <p class="cl-hint">Carousel, Portrait Row, Card Hand, and Sleek Phantom layouts use 9:16 images. Photo Grid, Solar System, and Sidebar use square (1:1) images. Summoning Circle and Solar System have built-in animated backgrounds and do not use player or background images.</p>
     </section>
 
     {{!-- Background section --}}
@@ -34,7 +35,7 @@
     <section class="cl-section">
       <h3 class="cl-section-title">Background</h3>
       <input type="hidden" class="cl-bg-url" name="backgroundUrl" value="" />
-      <p class="cl-hint">The Solar System layout has a built-in animated starfield background. Custom backgrounds are not supported for this layout.</p>
+      <p class="cl-hint">This layout has a built-in animated background. Custom backgrounds are not supported.</p>
     </section>
     {{else}}
     <section class="cl-section">

@@ -75,8 +75,8 @@ export class AppearanceEditor extends foundry.applications.api.HandlebarsApplica
       faviconUrl: settings.faviconUrl,
       screenTitle: settings.screenTitle,
       videoAudio: settings.videoAudio,
-      // Solar system has a self-contained animated background; custom BG not applicable.
-      isSelfContained: template === "solar-system"
+      // These layouts have built-in animated backgrounds; custom BG is not applicable.
+      isSelfContained: template === "solar-system" || template === "summoning-circle"
     };
   }
 
