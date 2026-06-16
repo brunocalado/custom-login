@@ -1,3 +1,11 @@
+# 0.3.2
+
+- [Changed] Summoning Circle — replaced procedurally generated mandala SVGs with a curated library of 30 arcane/mystical symbols (runes, alchemical glyphs, elder signs, and more); each symbol is rendered in the player's color.
+- [Changed] Summoning Circle — symbol assignment is now non-repeating: a globally shuffled pool guarantees every player gets a unique symbol until all 30 are exhausted, then wraps. Assignment is stable across page loads (hash-sorted by userId).
+- [Changed] Summoning Circle — center login button cursor changed from `crosshair` to `pointer` when the button is active.
+- [Changed] Summoning Circle — animated dashed connector line now travels from the player orb toward the center (was center toward orb).
+- [Changed] README updated: added Summoning Circle to the layouts table, added `preview-summon.webp` screenshot, replaced local patch guide link with the EN and PT-BR wiki pages, added emojis.
+
 # 0.3.1
 
 - [Added] Summoning Circle layout — decorative magic circle with player orbs positioned in a ring; features deterministic mandala symbols (generated uniquely per player), animated starfield background, and two-step login: click orb to select + click center to enter (or press Escape to deselect).

@@ -16,6 +16,46 @@ RESET='\033[0m'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# ─── Patch target and strings ─────────────────────────────────────────────────
+
+TARGET="$SCRIPT_DIR/resources/app/dist/server/express.mjs"
+BACKUP="${TARGET}.bak"
+
+OLD='express.static(this.paths.data,{redirect:!1,setHeaders:Express.#n})'
+NEW='express.static(this.paths.data,{redirect:!1})'
+
+# ─── Early detection: already patched? ───────────────────────────────────────
+
+if [[ -f "$TARGET" ]]; then
+    _early="$(cat "$TARGET")"
+    if echo "$_early" | grep -qF "$NEW" && ! echo "$_early" | grep -qF "$OLD"; then
+        echo ""
+        echo -e "${YELLOW}INFO: The patch has already been applied to:${RESET}"
+        echo "  $TARGET"
+        echo ""
+        if [[ -f "$BACKUP" ]]; then
+            echo -e "${CYAN}What would you like to do?${RESET}"
+            echo "  cancel  — exit without changes (default)"
+            echo "  restore — revert to the original Foundry file (uses backup)"
+            echo ""
+            read -r -p "(cancel/restore): " _choice
+            if [[ "$_choice" == "restore" ]]; then
+                cp "$BACKUP" "$TARGET"
+                echo ""
+                echo -e "${GREEN}Original file restored from backup.${RESET}"
+                echo -e "${CYAN}Restart Foundry VTT for the change to take effect.${RESET}"
+            else
+                echo ""
+                echo -e "${CYAN}No changes were made.${RESET}"
+            fi
+        else
+            echo -e "${YELLOW}No backup file found (${BACKUP}).${RESET}"
+            echo -e "${YELLOW}Cannot restore automatically — reinstall Foundry VTT to revert.${RESET}"
+        fi
+        exit 0
+    fi
+fi
+
 # ─── Security warning ────────────────────────────────────────────────────────
 
 echo ""
@@ -120,12 +160,6 @@ fi
 
 # ─── Apply patch ─────────────────────────────────────────────────────────────
 
-TARGET="$SCRIPT_DIR/resources/app/dist/server/express.mjs"
-BACKUP="${TARGET}.bak"
-
-OLD='express.static(this.paths.data,{redirect:!1,setHeaders:Express.#n})'
-NEW='express.static(this.paths.data,{redirect:!1})'
-
 echo "Target file  : $TARGET"
 
 if [[ ! -f "$TARGET" ]]; then
@@ -138,12 +172,6 @@ if [[ ! -f "$TARGET" ]]; then
 fi
 
 CONTENT="$(cat "$TARGET")"
-
-if echo "$CONTENT" | grep -qF "$NEW" && ! echo "$CONTENT" | grep -qF "$OLD"; then
-    echo ""
-    echo -e "${YELLOW}INFO: Patch has already been applied. No changes made.${RESET}"
-    exit 0
-fi
 
 if ! echo "$CONTENT" | grep -qF "$OLD"; then
     echo ""

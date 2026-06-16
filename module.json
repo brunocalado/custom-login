@@ -1,11 +1,11 @@
 {
   "id": "custom-login",
   "title": "Custom Login",
-  "version": "0.3.1",
+  "version": "0.3.2",
   
   "compatibility": {
     "minimum": "14.364",
-    "verified": "14.364"
+    "verified": "14"
   },
   
   "authors": [

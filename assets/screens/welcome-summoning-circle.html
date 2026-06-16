@@ -134,7 +134,7 @@
       line-height:1.2;
     }
 
-    #center.clickable { cursor:crosshair; pointer-events:auto; }
+    #center.clickable { cursor:pointer; pointer-events:auto; }
     #center.clickable::before {
       content:''; position:absolute; inset:-18px; border-radius:50%;
       background:radial-gradient(circle, rgba(196,164,74,.16) 0%, transparent 66%);
@@ -156,7 +156,7 @@
       stroke-dasharray: 5 4;
       animation: dash-march .7s linear infinite;
     }
-    @keyframes dash-march { to { stroke-dashoffset: -18; } }
+    @keyframes dash-march { to { stroke-dashoffset: 18; } }
   </style>
 </head>
 <body>
@@ -203,78 +203,157 @@
   }
 
   /* ── Mandala generator ── */
-  function petalPath(cx, cy, angle, r1, r2, width) {
-    const tx = cx + Math.cos(angle)*r2, ty = cy + Math.sin(angle)*r2;
-    const bx = cx + Math.cos(angle)*r1, by = cy + Math.sin(angle)*r1;
-    const pa = angle + Math.PI/2, mid = (r1+r2)/2;
-    const lx = cx + Math.cos(angle)*mid + Math.cos(pa)*width;
-    const ly = cy + Math.sin(angle)*mid + Math.sin(pa)*width;
-    const Rx = cx + Math.cos(angle)*mid - Math.cos(pa)*width;
-    const Ry = cy + Math.sin(angle)*mid - Math.sin(pa)*width;
-    return `M${f(bx)},${f(by)} Q${f(lx)},${f(ly)} ${f(tx)},${f(ty)} Q${f(Rx)},${f(Ry)} ${f(bx)},${f(by)}Z`;
-  }
+  /* ── Symbol library ── */
+  const SYMBOLS = [
+    // Algiz (Proteção)
+    '<path d="M12 3v18M12 3L7 9M12 3l5 6"/>',
+    // Fehu (Poder)
+    '<path d="M6 3v18M6 8h8L17 5M6 14h6l3-3"/>',
+    // Othala (Herança)
+    '<path d="M12 4L4 20h16L12 4z M9 15l3 3 3-3 M12 18v2"/>',
+    // Inguz (Semente)
+    '<path d="M12 4l-8 8 8 8 8-8-8-8z M12 4v16 M4 12h16"/>',
+    // Valknut
+    '<path d="M12 3l-9 16h18L12 3z M12 8l6 11H6L12 8z M8.5 13h7l-3.5 6.5L8.5 13z" opacity="0.9"/>' +
+    '<path d="M6 19L12 3l6 16H6z" opacity="0.5"/>' +
+    '<path d="M7.5 16.5L12 6l4.5 10.5h-9z"/>',
+    // Triskele Espiral
+    '<path d="M12 12c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5c0 3.5-2.5 6.5-6 6.5-1.5 0-3-1-3-2.5 0-1.5 1-2.5 2.5-2.5h1.5" transform="rotate(0 12 12)"/>' +
+    '<path d="M12 12c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5c0 3.5-2.5 6.5-6 6.5-1.5 0-3-1-3-2.5 0-1.5 1-2.5 2.5-2.5h1.5" transform="rotate(120 12 12)"/>' +
+    '<path d="M12 12c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5c0 3.5-2.5 6.5-6 6.5-1.5 0-3-1-3-2.5 0-1.5 1-2.5 2.5-2.5h1.5" transform="rotate(240 12 12)"/>',
+    // Pentagrama
+    '<circle cx="12" cy="12" r="10"/>' +
+    '<path d="M12 2l3 9h9l-7 5 3 9-8-6-8 6 3-9-7-5h9z"/>',
+    // Sol Alquímico
+    '<circle cx="12" cy="12" r="8"/>' +
+    '<circle cx="12" cy="12" r="1" fill="currentColor"/>',
+    // Mercúrio Alquímico
+    '<circle cx="12" cy="10" r="4"/>' +
+    '<path d="M12 14v7 M8 18h8 M8 6a4 4 0 0 1 8 0"/>',
+    // Semente da Vida
+    '<circle cx="12" cy="12" r="4"/>' +
+    '<circle cx="12" cy="8" r="4"/>' +
+    '<circle cx="12" cy="16" r="4"/>' +
+    '<circle cx="8.5" cy="10" r="4"/>' +
+    '<circle cx="15.5" cy="10" r="4"/>' +
+    '<circle cx="8.5" cy="14" r="4"/>' +
+    '<circle cx="15.5" cy="14" r="4"/>',
+    // Nó Celta
+    '<path d="M7 4h10v4H7z M13 4v16 M7 16h10v4H7z M11 20V4 M4 7h16v10H4z"/>',
+    // Foco Arcano
+    '<circle cx="12" cy="12" r="10" stroke-dasharray="2 2"/>' +
+    '<line x1="12" y1="2" x2="12" y2="22" opacity="0.5"/>' +
+    '<line x1="2" y1="12" x2="22" y2="12" opacity="0.5"/>' +
+    '<path d="M12 6 C15 6,18 9,18 12 C18 15,15 18,12 18 C9 18,6 15,6 12 C6 9,9 6,12 6 Z"/>' +
+    '<circle cx="12" cy="12" r="2"/>',
+    // Ankh
+    '<path d="M12 2a4 4 0 0 1 4 4c0 2.21-1.79 4-4 4s-4-1.79-4-4a4 4 0 0 1 4-4z M12 10v12 M8 16h8"/>',
+    // Olho de Hórus
+    '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/>' +
+    '<circle cx="12" cy="12" r="3"/>' +
+    '<path d="M12 17c0 0-3 2-3 4"/>' +
+    '<path d="M12 19c0 0 3-1 3-3"/>',
+    // Triquetra
+    '<path d="M12 2c0 0 6 4 6 10s-6 10-6 10S6 18 6 12 12 2 12 2z M12 2c0 0-4 6-10 6s-10 6-10 6 4 6 10 6 10 6 10 6z M12 22c0 0 4-6 10-6s10-6 10-6-4-6-10-6-10-6-10-6z" transform="rotate(30 12 12)"/>' +
+    '<circle cx="12" cy="12" r="4"/>',
+    // Ouroboros
+    '<path d="M12 2a10 10 0 1 0 10 10 10 10 0 0 0-10-10z M12 4a8 8 0 1 1-8 8 8 8 0 0 1 8-8z M10 6l2-2 2 2"/>' +
+    '<circle cx="18" cy="12" r="1" fill="currentColor"/>',
+    // Vegvisir
+    '<line x1="12" y1="2" x2="12" y2="22"/>' +
+    '<line x1="2" y1="12" x2="22" y2="12"/>' +
+    '<line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>' +
+    '<line x1="19.07" y1="4.93" x2="4.93" y2="19.07"/>' +
+    '<circle cx="12" cy="2" r="1" fill="currentColor"/>' +
+    '<circle cx="12" cy="22" r="1" fill="currentColor"/>' +
+    '<circle cx="2" cy="12" r="1" fill="currentColor"/>' +
+    '<circle cx="22" cy="12" r="1" fill="currentColor"/>' +
+    '<path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" stroke-dasharray="2 2"/>',
+    // Hamsa
+    '<path d="M12 2L8 6c0 0-2 4-2 8s2 8 6 8 6-4 6-8-2-8-2-8L12 2z M6 14s-2 2-2 4c0 2 2 4 2 4s2-2 2-4c0-2-2-4-2-4z M18 14s2 2 2 4c0 2-2 4-2 4s-2-2-2-4c0-2 2-4 2-4z"/>' +
+    '<circle cx="12" cy="14" r="2"/>',
+    // Nyarlathotep
+    '<path d="M12 12m-6 0a6 6 0 1 0 12 0a6 6 0 1 0 -12 0" transform="skewX(30) skewY(15)"/>' +
+    '<path d="M12 12 Q20 20 22 8 Q12 12 4 20"/>' +
+    '<path d="M12 12 Q8 4 2 12 Q12 12 16 22"/>',
+    // Yog-Sothoth
+    '<circle cx="9" cy="9" r="6" stroke-dasharray="3 2"/>' +
+    '<circle cx="17" cy="12" r="5"/>' +
+    '<circle cx="10" cy="18" r="4"/>' +
+    '<path d="M9 3 L17 7 M17 17 L10 22 M3 9 L10 18"/>' +
+    '<circle cx="9" cy="9" r="1" fill="currentColor"/>',
+    // O Chamado
+    '<path d="M12 12 C 16 16,22 6,20 22 C 12 18,4 22,2 6 C 8 16,12 12,12 12 Z"/>' +
+    '<circle cx="12" cy="7" r="2" transform="scale(1 1.5) translate(0 -2)"/>' +
+    '<path d="M12 2 L12 5 M12 20 L12 22"/>',
+    // R\'lyeh
+    '<polygon points="2,6 16,4 20,16 6,20"/>' +
+    '<polygon points="8,8 22,2 14,22 4,12"/>' +
+    '<line x1="2" y1="6" x2="8" y2="8"/>' +
+    '<line x1="16" y1="4" x2="22" y2="2"/>' +
+    '<line x1="20" y1="16" x2="14" y2="22"/>' +
+    '<line x1="6" y1="20" x2="4" y2="12"/>',
+    // Hastur
+    '<path d="M12 8 Q18 2 20 12 T12 22 T2 10 T12 8"/>' +
+    '<path d="M12 14 C 18 14 16 20 22 22"/>' +
+    '<path d="M10 12 C 4 12 6 6 2 4"/>' +
+    '<path d="M14 10 C 14 4 20 6 22 2"/>',
+    // Vigilância
+    '<ellipse cx="12" cy="8" rx="6" ry="2.5" transform="rotate(15 12 8)"/>' +
+    '<circle cx="12" cy="8" r="1"/>' +
+    '<ellipse cx="6" cy="18" rx="4" ry="1.5" transform="rotate(-30 6 18)"/>' +
+    '<circle cx="6" cy="18" r="0.5"/>' +
+    '<ellipse cx="18" cy="16" rx="5" ry="2" transform="rotate(45 18 16)"/>' +
+    '<circle cx="18" cy="16" r="1"/>' +
+    '<path d="M12 12 Q15 16 12 20" stroke-dasharray="1 2"/>',
+    // Sanidade
+    '<circle cx="12" cy="12" r="9" stroke-dasharray="5 8"/>' +
+    '<polyline points="2,14 8,10 10,16 15,8 22,12"/>' +
+    '<line x1="10" y1="16" x2="12" y2="22"/>' +
+    '<line x1="15" y1="8" x2="16" y2="2"/>',
+    // Indizível
+    '<path d="M2 12 C10 2 20 20 12 12 C4 4 14 22 22 12"/>' +
+    '<path d="M12 2 C2 10 20 10 12 22"/>' +
+    '<circle cx="12" cy="12" r="1"/>',
+    // Azathoth
+    '<path d="M12 2 Q14 10 22 12 Q14 14 12 22 Q10 14 2 12 Q10 10 12 2 Z" transform="rotate(25 12 12)"/>' +
+    '<path d="M12 4 Q13 11 20 12 Q13 13 12 20 Q11 13 4 12 Q11 11 12 4 Z" transform="rotate(-35 12 12)" stroke-dasharray="2 2"/>' +
+    '<circle cx="12" cy="12" r="3"/>',
+    // Kadath
+    '<path d="M12 12 L12 2 A10 10 0 0 1 22 12 A10 10 0 0 1 12 22 A10 10 0 0 1 2 12 A10 10 0 0 1 12 2" stroke-dasharray="1 4"/>' +
+    '<path d="M3 3 L21 21 M3 21 L21 3"/>' +
+    '<rect x="7" y="7" width="10" height="10" transform="rotate(15 12 12)"/>',
+    // O Vazio
+    '<path d="M12 2 C20 2 22 12 12 22 C2 12 4 2 12 2 Z"/>' +
+    '<path d="M12 6 L14 10 L18 10 L15 13 L16 18 L12 15 L8 18 L9 13 L6 10 L10 10 Z" transform="scale(0.7) translate(5 5)"/>' +
+    '<path d="M12 2 v4 M12 22 v-4 M2 12 h4 M22 12 h-4"/>',
+    // Simbiose
+    '<path d="M 12 12 Q 18 4,22 10 T 12 12 Q 4 20,2 14 T 12 12 Q 4 4,10 2 T 12 12 Q 20 20,14 22 T 12 12"/>' +
+    '<circle cx="12" cy="12" r="5" stroke-dasharray="2 3"/>',
+  ];
+
+  // Shuffled pool of symbol indices (computed once); guarantees no repeats until all symbols are exhausted.
+  const SYMBOL_POOL = (() => {
+    const idx = Array.from({ length: SYMBOLS.length }, (_, i) => i);
+    let sv = 0x9e3779b9;
+    const rng = () => { sv ^= sv << 13; sv ^= sv >> 17; sv ^= sv << 5; return (sv >>> 0) / 0xffffffff; };
+    for (let i = idx.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [idx[i], idx[j]] = [idx[j], idx[i]];
+    }
+    return idx;
+  })();
 
   /**
-   * Generates a unique mandala SVG string for a player.
-   * @param {number} seed  - deterministic seed derived from userId
+   * Returns a symbol SVG for a player, coloured to their assigned colour.
+   * @param {number} idx   - index into SYMBOLS (from SYMBOL_POOL assignment)
    * @param {string} color - hex colour
-   * @param {number} size  - pixel size (square)
    * @returns {string} SVG markup
    */
-  function makeMandala(seed, color, size) {
-    let sv = (seed * 2654435761) >>> 0;
-    const rng = () => { sv^=sv<<13; sv^=sv>>17; sv^=sv<<5; return (sv>>>0)/0xffffffff; };
+  function pickSymbol(idx, color) {
     const [r,g,b] = hexToRgb(color);
-    const c = a => `rgba(${r},${g},${b},${a})`;
-    const cx = size/2, cy = size/2;
-    const n       = 4 + Math.floor(rng()*5);
-    const pOut    = size*(.34 + rng()*.06);
-    const pIn     = size*(.14 + rng()*.05);
-    const pW      = size*(.09 + rng()*.05);
-    const hasOuter = rng() > .32;
-    const hasMid   = rng() > .38;
-    const hasInner = rng() > .38;
-    const els = [];
-
-    if (hasOuter) {
-      const oR = size*.43;
-      els.push(`<circle cx="${cx}" cy="${cy}" r="${f(oR)}" fill="none" stroke="${c(.17)}" stroke-width=".7"/>`);
-      for (let i=0; i<n*2; i++) {
-        const a = (i/(n*2))*Math.PI*2;
-        els.push(`<line x1="${f(cx+Math.cos(a)*oR*.93)}" y1="${f(cy+Math.sin(a)*oR*.93)}" x2="${f(cx+Math.cos(a)*oR)}" y2="${f(cy+Math.sin(a)*oR)}" stroke="${c(.2)}" stroke-width=".5"/>`);
-      }
-    }
-
-    for (let i=0; i<n; i++) {
-      const a = (i/n)*Math.PI*2;
-      els.push(`<path d="${petalPath(cx,cy,a,pIn,pOut,pW)}" fill="${c(.12)}" stroke="${c(.52)}" stroke-width=".85"/>`);
-    }
-
-    if (hasMid) {
-      const mOut = pIn*1.6 + rng()*.12*size;
-      for (let i=0; i<n; i++) {
-        const a = ((i+.5)/n)*Math.PI*2;
-        els.push(`<path d="${petalPath(cx,cy,a,size*.07,mOut,pW*.54)}" fill="${c(.07)}" stroke="${c(.28)}" stroke-width=".6"/>`);
-      }
-    }
-
-    els.push(`<circle cx="${cx}" cy="${cy}" r="${f(pIn)}" fill="none" stroke="${c(.46)}" stroke-width="1"/>`);
-
-    if (hasInner) {
-      const pts = Array.from({length:n}, (_,i) => {
-        const a = (i/n)*Math.PI*2 - Math.PI/2;
-        return `${f(cx+Math.cos(a)*pIn*.72)},${f(cy+Math.sin(a)*pIn*.72)}`;
-      }).join(' ');
-      els.push(`<polygon points="${pts}" fill="${c(.07)}" stroke="${c(.33)}" stroke-width=".7"/>`);
-    }
-
-    for (let i=0; i<n; i++) {
-      const a = (i/n)*Math.PI*2;
-      els.push(`<circle cx="${f(cx+Math.cos(a)*pOut)}" cy="${f(cy+Math.sin(a)*pOut)}" r="${f(size*.022)}" fill="${c(.5)}"/>`);
-    }
-    els.push(`<circle cx="${cx}" cy="${cy}" r="${f(size*.048)}" fill="${c(.46)}"/>`);
-    els.push(`<circle cx="${cx}" cy="${cy}" r="${f(size*.02)}" fill="${c(.9)}"/>`);
-    return `<svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">${els.join('')}</svg>`;
+    const c = `rgba(${r},${g},${b},0.82)`;
+    return `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke="${c}" fill="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" color="${c}" style="width:100%;height:100%;overflow:visible">${SYMBOLS[idx]}</svg>`;
   }
 
   /* ── Magic circle SVG ── */
@@ -402,12 +481,16 @@
     const orbSize = Math.max(52, Math.min(72, Math.floor(2 * Math.PI * orbR / n * 0.55)));
     const labelSz = Math.max(8, Math.floor(orbSize * 0.145));
 
+    // Assign unique symbols: sort by userId hash for stable ordering, then draw from the shuffled pool
+    const symbolByUid = {};
+    [...entries].sort((a, b) => hashStr(a.userId) - hashStr(b.userId))
+      .forEach((e, i) => { symbolByUid[e.userId] = SYMBOL_POOL[i % SYMBOL_POOL.length]; });
+
     entries.forEach(function(entry, i) {
       const angle = (i/n)*Math.PI*2 - Math.PI/2;
       const x = cx + Math.cos(angle)*orbR;
       const y = cy + Math.sin(angle)*orbR;
       const [r,g,b] = hexToRgb(entry.color || '#c4a44a');
-      const seed    = hashStr(entry.userId);
       const name    = displayName(entry);
       const label   = name.length > 10 ? name.slice(0,9) + '…' : name;
 
@@ -418,7 +501,7 @@
 
       el.innerHTML = `
         <div class="orb-shell" style="width:${orbSize}px;height:${orbSize}px">
-          <span class="orb-mandala">${makeMandala(seed, entry.color || '#c4a44a', orbSize)}</span>
+          <span class="orb-mandala">${pickSymbol(symbolByUid[entry.userId], entry.color || '#c4a44a')}</span>
         </div>
         ${showNames ? `<div class="orb-label" style="font-size:${labelSz}px">${esc(label)}</div>` : ''}`;
 

@@ -2,25 +2,41 @@
 <#
 .SYNOPSIS
     Re-enables HTML file hosting from the Data folder in Foundry VTT 14.364+.
-    Run from the root of the Foundry installation (the folder that contains dist/).
+    Place this script in the Foundry VTT installation folder (the one that
+    contains resources\) and run it from there.
 #>
 
 $ErrorActionPreference = "Stop"
 
-# ─── Patch target and strings ─────────────────────────────────────────────────
+# ─── Patch definitions ───────────────────────────────────────────────────────
+#
+# Patch 1: remove the setHeaders callback from express.static so the
+#          serve-static middleware no longer overrides Content-Type.
+#
+# Patch 2: neutralise the #n method body so it can never force text/plain
+#          even if it is somehow reached through another code path.
 
-$target = Join-Path $PSScriptRoot "dist\server\express.mjs"
+$old1 = 'express.static(this.paths.data,{redirect:!1,setHeaders:Express.#n})'
+$new1 = 'express.static(this.paths.data,{redirect:!1})'
+
+$old2 = 'static#n(e,s){const t=mime.lookup(s.replace(/[\s.]+$/,""));"text/html"!==t&&"application/xhtml+xml"!==t||(logger.debug(`Serving ${s} with a Content-Type of "text/plain"`),e.contentType("text/plain"))}'
+$new2 = 'static#n(e,s){}'
+
+# ─── Locate target ───────────────────────────────────────────────────────────
+
+$target = Join-Path $PSScriptRoot "resources\app\dist\server\express.mjs"
 $backup = "$target.bak"
-$old    = 'express.static(this.paths.data,{redirect:!1,setHeaders:Express.#n})'
-$new    = 'express.static(this.paths.data,{redirect:!1})'
 
 # ─── Early detection: already patched? ───────────────────────────────────────
 
 if (Test-Path $target) {
     $earlyContent = [System.IO.File]::ReadAllText($target)
-    if ($earlyContent.Contains($new) -and -not $earlyContent.Contains($old)) {
+    $earlyP1Done  = $earlyContent.Contains($new1) -and -not $earlyContent.Contains($old1)
+    $earlyP2Done  = $earlyContent.Contains($new2) -and -not $earlyContent.Contains($old2)
+
+    if ($earlyP1Done -and $earlyP2Done) {
         Write-Host ""
-        Write-Host "INFO: The patch has already been applied to:" -ForegroundColor Yellow
+        Write-Host "INFO: Both patches have already been applied to:" -ForegroundColor Yellow
         Write-Host "  $target"
         Write-Host ""
         if (Test-Path $backup) {
@@ -95,18 +111,18 @@ if ($confirm -notmatch '^yes$') {
 }
 
 Write-Host ""
-Write-Host "=== Patch: Re-enable HTML hosting in Foundry VTT ===" -ForegroundColor Cyan
+Write-Host "=== Patch: Re-enable HTML hosting in Foundry VTT (Windows installed) ===" -ForegroundColor Cyan
 Write-Host ""
 
 # ─── Version check ───────────────────────────────────────────────────────────
 
-$pkgPath = Join-Path $PSScriptRoot "package.json"
+$pkgPath = Join-Path $PSScriptRoot "resources\app\package.json"
 if (-not (Test-Path $pkgPath)) {
     Write-Host "ERROR: package.json not found at:" -ForegroundColor Red
     Write-Host "  $pkgPath" -ForegroundColor Red
     Write-Host ""
-    Write-Host "Run this script from the root of a Foundry VTT installation" `
-               "(the folder that contains dist/)." -ForegroundColor Yellow
+    Write-Host "Place this script in the root of the Foundry VTT installation" `
+               "(the folder that contains resources\)." -ForegroundColor Yellow
     exit 1
 }
 
@@ -129,7 +145,7 @@ if ($build -gt 364) {
     Write-Host ""
     Write-Host "WARNING: You are running Foundry VTT $version, which is newer than 14.364." -ForegroundColor Yellow
     Write-Host "  This patch was written for 14.364. The target strings may have changed." -ForegroundColor Yellow
-    Write-Host "  Verify the patch strings manually in dist/server/express.mjs before continuing." -ForegroundColor Yellow
+    Write-Host "  Verify the patch strings manually in resources\app\dist\server\express.mjs before continuing." -ForegroundColor Yellow
     Write-Host ""
     $confirmNewer = Read-Host "Continue anyway? (yes/no)"
     if ($confirmNewer -notmatch '^yes$') {
@@ -140,7 +156,7 @@ if ($build -gt 364) {
     Write-Host ""
 }
 
-# ─── Apply patch ─────────────────────────────────────────────────────────────
+# ─── Validate target ─────────────────────────────────────────────────────────
 
 Write-Host "Target file  : $target"
 
@@ -149,32 +165,76 @@ if (-not (Test-Path $target)) {
     Write-Host "ERROR: File not found:" -ForegroundColor Red
     Write-Host "  $target" -ForegroundColor Red
     Write-Host ""
-    Write-Host "Run this script from the root of the Foundry VTT installation" `
-               "(the folder that contains dist/)." -ForegroundColor Yellow
+    Write-Host "Place this script in the root of the Foundry VTT installation" `
+               "(the folder that contains resources\)." -ForegroundColor Yellow
     exit 1
 }
 
 $content = [System.IO.File]::ReadAllText($target)
 
-if (-not $content.Contains($old)) {
+# ─── Already-applied check ───────────────────────────────────────────────────
+
+$p1Done = $content.Contains($new1) -and -not $content.Contains($old1)
+$p2Done = $content.Contains($new2) -and -not $content.Contains($old2)
+
+# ─── Sanity check ────────────────────────────────────────────────────────────
+
+if (-not $p1Done -and -not $content.Contains($old1)) {
     Write-Host ""
-    Write-Host "ERROR: Expected string not found in the file." -ForegroundColor Red
+    Write-Host "ERROR: Patch 1 target string not found in the file." -ForegroundColor Red
     Write-Host "  This may be a different Foundry version or the file was already modified." -ForegroundColor Red
     Write-Host "  Inspect the file manually:" -ForegroundColor Yellow
     Write-Host "  $target" -ForegroundColor Yellow
     exit 1
 }
 
-Copy-Item -Path $target -Destination $backup -Force
-Write-Host "Backup created: $backup"
+if (-not $p2Done -and -not $content.Contains($old2)) {
+    Write-Host ""
+    Write-Host "ERROR: Patch 2 target string not found in the file." -ForegroundColor Red
+    Write-Host "  This may be a different Foundry version or the file was already modified." -ForegroundColor Red
+    Write-Host "  Inspect the file manually:" -ForegroundColor Yellow
+    Write-Host "  $target" -ForegroundColor Yellow
+    exit 1
+}
 
-$patched = $content.Replace($old, $new)
+# ─── Backup (only if original not already saved) ─────────────────────────────
+
+if (-not (Test-Path $backup)) {
+    Copy-Item -Path $target -Destination $backup -Force
+    Write-Host "Backup created: $backup"
+} else {
+    Write-Host "Backup exists : $backup (skipped)"
+}
+
+# ─── Apply patches ───────────────────────────────────────────────────────────
+
+$patched = $content
+
+if (-not $p1Done) {
+    $patched = $patched.Replace($old1, $new1)
+    Write-Host "Patch 1 applied: removed setHeaders callback from express.static"
+} else {
+    Write-Host "Patch 1        : already applied, skipped"
+}
+
+if (-not $p2Done) {
+    $patched = $patched.Replace($old2, $new2)
+    Write-Host "Patch 2 applied: neutralised #n method body"
+} else {
+    Write-Host "Patch 2        : already applied, skipped"
+}
+
 [System.IO.File]::WriteAllText($target, $patched, [System.Text.UTF8Encoding]::new($false))
 
+# ─── Verify ──────────────────────────────────────────────────────────────────
+
 $verify = [System.IO.File]::ReadAllText($target)
-if ($verify.Contains($new) -and -not $verify.Contains($old)) {
+$v1 = $verify.Contains($new1) -and -not $verify.Contains($old1)
+$v2 = $verify.Contains($new2) -and -not $verify.Contains($old2)
+
+if ($v1 -and $v2) {
     Write-Host ""
-    Write-Host "SUCCESS! Patch applied." -ForegroundColor Green
+    Write-Host "SUCCESS! Both patches applied." -ForegroundColor Green
     Write-Host ""
     Write-Host "HTML files in the Data folder will be served as text/html again." -ForegroundColor Green
     Write-Host "Restart Foundry VTT for the change to take effect."              -ForegroundColor Cyan
