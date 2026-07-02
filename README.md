@@ -94,8 +94,8 @@ Foundry VTT 14.361 changed how `.html` files are served from the `Data` folder: 
 The patch scripts are included in the module (`patch-foundry/` folder) and take about a minute to apply.
 
 📖 **Setup guides:**
-- 🇺🇸 [Setting Up Custom Login for Foundry VTT 14 (English)](https://github.com/brunocalado/custom-login/wiki/Setting-Up-Custom-Login-for-Foundry-VTT-14)
-- 🇧🇷 [Configurando o Custom Login para o Foundry VTT 14 (Português)](https://github.com/brunocalado/custom-login/wiki/Configurando-o-Custom-Login-para-o-Foundry-VTT-14)
+- 🇺🇸 [Setting Up Custom Login for Foundry VTT (English)](https://github.com/brunocalado/custom-login/wiki/Setting-Up-Custom-Login-for-Foundry-VTT)
+- 🇧🇷 [Configurando o Custom Login para o Foundry VTT (Português)](https://github.com/brunocalado/custom-login/wiki/Configurando-o-Custom-Login-para-o-Foundry-VTT)
 
 > The patch must be re-applied after each Foundry update.
 
