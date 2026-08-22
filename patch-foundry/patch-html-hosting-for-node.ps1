@@ -125,10 +125,10 @@ if ($generation -ne 14 -or $build -lt 364) {
     exit 1
 }
 
-if ($build -gt 364) {
+if ($build -gt 367) {
     Write-Host ""
-    Write-Host "WARNING: You are running Foundry VTT $version, which is newer than 14.364." -ForegroundColor Yellow
-    Write-Host "  This patch was written for 14.364. The target strings may have changed." -ForegroundColor Yellow
+    Write-Host "WARNING: You are running Foundry VTT $version, which is newer than 14.367." -ForegroundColor Yellow
+    Write-Host "  This patch was verified through 14.367. The target strings may have changed." -ForegroundColor Yellow
     Write-Host "  Verify the patch strings manually in dist/server/express.mjs before continuing." -ForegroundColor Yellow
     Write-Host ""
     $confirmNewer = Read-Host "Continue anyway? (yes/no)"

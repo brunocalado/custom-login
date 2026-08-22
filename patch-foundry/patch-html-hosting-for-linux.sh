@@ -142,10 +142,10 @@ if [[ "$generation" -ne 14 || "$build" -lt 364 ]]; then
     exit 1
 fi
 
-if [[ "$build" -gt 364 ]]; then
+if [[ "$build" -gt 367 ]]; then
     echo ""
-    echo -e "${YELLOW}WARNING: You are running Foundry VTT $VERSION, which is newer than 14.364.${RESET}"
-    echo -e "${YELLOW}  This patch was written for 14.364. The target strings may have changed.${RESET}"
+    echo -e "${YELLOW}WARNING: You are running Foundry VTT $VERSION, which is newer than 14.367.${RESET}"
+    echo -e "${YELLOW}  This patch was verified through 14.367. The target strings may have changed.${RESET}"
     echo -e "${YELLOW}  Verify the patch strings manually in resources/app/dist/server/express.mjs${RESET}"
     echo -e "${YELLOW}  before continuing.${RESET}"
     echo ""
