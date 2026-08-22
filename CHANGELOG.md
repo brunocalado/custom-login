@@ -1,3 +1,7 @@
+# 0.3.4
+
+14.367 ok
+
 # 0.3.2
 
 - [Changed] Summoning Circle — replaced procedurally generated mandala SVGs with a curated library of 30 arcane/mystical symbols (runes, alchemical glyphs, elder signs, and more); each symbol is rendered in the player's color.

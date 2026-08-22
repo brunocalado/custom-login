@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     Re-enables HTML file hosting from the Data folder in Foundry VTT 14.364+.

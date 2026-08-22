@@ -41,7 +41,7 @@ async function loginAs(userId, password = '') {
     const res = await fetch('/join', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'join', userid: userId, password }),
+      body: JSON.stringify({ action: 'join', userId, password }),
       credentials: 'same-origin'
     });
     const data = await res.json().catch(() => ({}));
